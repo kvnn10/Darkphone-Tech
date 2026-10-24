@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
-import { Wrench, Plus, Search, RefreshCw, Clock3, CheckCircle2, Package, CalendarClock, CircleDollarSign, X, Save, ClipboardCheck, Smartphone, ReceiptText } from "lucide-react";
+import { Wrench, Plus, Search, RefreshCw, Clock3, CheckCircle2, Package, CalendarClock, CircleDollarSign, X, Save, ClipboardCheck, Smartphone, ReceiptText, Upload, Image as ImageIcon, Video, ExternalLink } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 type Status = "received"|"diagnosing"|"awaiting_approval"|"awaiting_parts"|"in_repair"|"ready"|"delivered"|"cancelled";
@@ -10,6 +10,9 @@ type Product = {id:string;name:string;brand:string|null;model:string|null;sku:st
 type Order = {id:string;order_number:number;customer_id:string|null;device_name:string;serial_number:string|null;reported_fault:string;diagnosis:string|null;work_notes:string|null;status:Status;approval_status:string;estimated_cost:number;final_cost:number|null;parts_cost:number;received_at:string;promised_at:string|null;delivered_at:string|null;customers?:{full_name:string;phone:string|null}|null};
 type Part = {id:string;service_order_id:string;product_id:string;quantity:number;unit_cost:number;created_at:string;products?:{name:string;sku:string|null}|null};
 type Payment = {id:string;amount:number;method:string;reference:string|null;created_at:string};
+type Evidence = {id:string;service_order_id:string;storage_path:string;file_name:string;mime_type:string;file_size:number;category:"initial"|"diagnosis"|"repair"|"delivery";notes:string|null;created_at:string;url?:string};
+const evidenceCategories:{value:Evidence["category"];label:string}[]=[{value:"initial",label:"Estado inicial"},{value:"diagnosis",label:"Diagnóstico"},{value:"repair",label:"Proceso de reparación"},{value:"delivery",label:"Entrega"}];
+const evidenceBucket="service-order-evidence";
 type Draft = {customer_id:string;device_name:string;serial_number:string;reported_fault:string;diagnosis:string;estimated_cost:string;promised_at:string;approval:boolean};
 const initialDraft:Draft={customer_id:"",device_name:"",serial_number:"",reported_fault:"",diagnosis:"",estimated_cost:"",promised_at:"",approval:false};
 const statuses:{value:Status;label:string}[]=[{value:"received",label:"Recibido"},{value:"diagnosing",label:"En diagnóstico"},{value:"awaiting_approval",label:"Esperando aprobación"},{value:"awaiting_parts",label:"Esperando repuesto"},{value:"in_repair",label:"En reparación"},{value:"ready",label:"Listo para entregar"},{value:"delivered",label:"Entregado"},{value:"cancelled",label:"Cancelado"}];
@@ -19,13 +22,14 @@ const dateFmt=(s:string|null)=>s?new Date(s).toLocaleDateString("es-CO",{day:"2-
 const statusLabel=(s:string)=>statuses.find(x=>x.value===s)?.label??s;
 export default function ServiceTechnicalPage(){
  const [orders,setOrders]=useState<Order[]>([]),[customers,setCustomers]=useState<Customer[]>([]),[products,setProducts]=useState<Product[]>([]);
- const [parts,setParts]=useState<Part[]>([]),[payments,setPayments]=useState<Payment[]>([]);
+ const [parts,setParts]=useState<Part[]>([]),[payments,setPayments]=useState<Payment[]>([]),[evidence,setEvidence]=useState<Evidence[]>([]);
  const [selected,setSelected]=useState<string>(""),[loading,setLoading]=useState(true),[saving,setSaving]=useState(false);
  const [query,setQuery]=useState(""),[statusFilter,setStatusFilter]=useState("all"),[showForm,setShowForm]=useState(false);
  const [draft,setDraft]=useState<Draft>(initialDraft),[message,setMessage]=useState(""),[error,setError]=useState("");
  const [diagnosis,setDiagnosis]=useState(""),[workNotes,setWorkNotes]=useState(""),[finalCost,setFinalCost]=useState("");
  const [partProduct,setPartProduct]=useState(""),[partQuantity,setPartQuantity]=useState("1"),[partNotes,setPartNotes]=useState("");
  const [payAmount,setPayAmount]=useState(""),[payMethod,setPayMethod]=useState("cash"),[payReference,setPayReference]=useState("");
+ const [evidenceCategory,setEvidenceCategory]=useState<Evidence["category"]>("initial"),[evidenceNotes,setEvidenceNotes]=useState(""),[evidenceFiles,setEvidenceFiles]=useState<File[]>([]),[uploadingEvidence,setUploadingEvidence]=useState(false);
  const load=useCallback(async()=>{
   if(!supabase){setError("Conecta Supabase para consultar y registrar órdenes de servicio.");setLoading(false);return}
   setLoading(true);setError("");
@@ -48,6 +52,27 @@ export default function ServiceTechnicalPage(){
  const revenue=orders.filter(o=>o.status!=="cancelled").reduce((s,o)=>s+Number(o.final_cost??o.estimated_cost??0),0);
  const paid=payments.reduce((s,p)=>s+Number(p.amount),0);
  const currentProduct=products.find(p=>p.id===partProduct);
+ async function loadEvidence(orderId:string){
+  if(!supabase)return;
+  const {data,error}=await supabase.from("service_order_evidence").select("id,service_order_id,storage_path,file_name,mime_type,file_size,category,notes,created_at").eq("service_order_id",orderId).order("created_at",{ascending:false});
+  if(error){setError("No se pudieron cargar las evidencias: "+error.message);setEvidence([]);return}
+  const rows=(data??[]) as Evidence[];
+  const signed=await Promise.all(rows.map(async row=>{const {data:link}=await supabase.storage.from(evidenceBucket).createSignedUrl(row.storage_path,1800);return {...row,url:link?.signedUrl}}));
+  setEvidence(signed);
+ }
+ async function uploadEvidence(e:FormEvent){
+  e.preventDefault();if(!supabase||!active||!evidenceFiles.length)return;
+  const allowed=["image/jpeg","image/png","image/webp","image/heic","image/heif","video/mp4","video/quicktime","video/webm"];
+  for(const file of evidenceFiles){if(!allowed.includes(file.type)){setError("Formato no compatible: "+file.name);return}if(file.size>30*1024*1024){setError("Cada archivo debe pesar máximo 30 MB: "+file.name);return}}
+  setUploadingEvidence(true);setError("");setMessage("");
+  try{for(const file of evidenceFiles){const safe=file.name.normalize("NFKD").replace(/[^a-zA-Z0-9._-]+/g,"-").slice(-120)||"evidencia";const path=active.id+"/"+crypto.randomUUID()+"-"+safe;
+   const {error:upErr}=await supabase.storage.from(evidenceBucket).upload(path,file,{contentType:file.type,upsert:false});if(upErr)throw new Error("Error subiendo "+file.name+": "+upErr.message);
+   const {error:rowErr}=await supabase.from("service_order_evidence").insert({service_order_id:active.id,storage_path:path,file_name:file.name,mime_type:file.type,file_size:file.size,category:evidenceCategory,notes:evidenceNotes.trim()||null});
+   if(rowErr){await supabase.storage.from(evidenceBucket).remove([path]);throw new Error("No se guardó el registro: "+rowErr.message)}
+  }
+  setMessage("Evidencias guardadas en la orden #"+active.order_number+".");setEvidenceFiles([]);setEvidenceNotes("");const picker=document.getElementById("service-evidence-files") as HTMLInputElement|null;if(picker)picker.value="";await loadEvidence(active.id);
+  }catch(err){setError(err instanceof Error?err.message:"No se pudieron guardar las evidencias.")}finally{setUploadingEvidence(false)}
+ }
  async function openOrder(o:Order){
   setSelected(o.id);setDiagnosis(o.diagnosis??"");setWorkNotes(o.work_notes??"");setFinalCost(String(o.final_cost??o.estimated_cost??""));setMessage("");setError("");
   if(!supabase)return;
@@ -57,8 +82,9 @@ export default function ServiceTechnicalPage(){
   ]);
   if(pa.error)setError("No se pudieron cargar los repuestos. Verifica que esté aplicada la migración avanzada: "+pa.error.message);else setParts((pa.data??[]) as unknown as Part[]);
   if(py.error)setError("No se pudieron cargar los abonos: "+py.error.message);else setPayments((py.data??[]) as Payment[]);
+  await loadEvidence(o.id);
  }
- function closeDetail(){setSelected("");setParts([]);setPayments([]);setMessage("");setError("");}
+ function closeDetail(){setSelected("");setParts([]);setPayments([]);setEvidence([]);setEvidenceFiles([]);setMessage("");setError("");}
  async function createOrder(e:FormEvent){
   e.preventDefault();if(!supabase)return;
   if(!draft.device_name.trim()||!draft.reported_fault.trim()){setError("Completa el equipo y la falla reportada.");return}
@@ -150,6 +176,20 @@ export default function ServiceTechnicalPage(){
     <div className="service-status-control"><label>Estado de la orden</label><select value={active.status} disabled={saving||active.status==="cancelled"} onChange={e=>void changeStatus(e.target.value as Status)}>{statuses.map(s=><option key={s.value} value={s.value}>{s.label}</option>)}</select></div>
     {active.status==="awaiting_approval"&&<div className="service-approval-note"><Clock3 size={15}/><span>Presupuesto pendiente de aprobación. Para continuar, cambia el estado a «En reparación» cuando el cliente autorice.</span></div>}
     <form className="service-progress-form" onSubmit={saveProgress}><div className="field"><label>Falla reportada</label><div className="service-reported-fault">{active.reported_fault}</div></div><div className="field"><label>Diagnóstico</label><textarea rows={3} value={diagnosis} onChange={e=>setDiagnosis(e.target.value)} placeholder="Hallazgos y pruebas realizadas"/></div><div className="field"><label>Trabajo realizado / notas técnicas</label><textarea rows={3} value={workNotes} onChange={e=>setWorkNotes(e.target.value)} placeholder="Reparación realizada, pruebas finales, observaciones"/></div><div className="field"><label>Costo final al cliente (COP)</label><input type="number" min="0" step="1" value={finalCost} onChange={e=>setFinalCost(e.target.value)} placeholder="0"/></div><button className="button secondary service-save-progress" type="submit" disabled={saving}><Save size={13}/> Guardar diagnóstico y costos</button></form>
+    <div className="service-subsection service-evidence-section"><div className="service-subsection-head"><h3><ImageIcon size={15}/> Fotos y videos del equipo</h3><span>{evidence.length} archivos</span></div>
+     <p className="service-footnote">Adjunta evidencia al recibir el equipo y durante el diagnóstico, reparación o entrega. Los archivos se guardan de forma privada en esta orden.</p>
+     {evidence.length>0?<div className="service-evidence-grid">{evidence.map(item=><article className="service-evidence-card" key={item.id}>
+      <a className="service-evidence-preview" href={item.url||undefined} target="_blank" rel="noreferrer" aria-label={"Abrir "+item.file_name}>
+       {item.mime_type.startsWith("video/")?<span className="service-evidence-file"><Video size={25}/><small>VIDEO</small></span>:item.url?<img src={item.url} alt={item.file_name}/>:<span className="service-evidence-file"><ImageIcon size={25}/></span>}
+       <span className="service-evidence-open"><ExternalLink size={13}/></span>
+      </a><div className="service-evidence-info"><b>{item.file_name}</b><span>{evidenceCategories.find(x=>x.value===item.category)?.label??item.category} · {(item.file_size/1048576).toFixed(1)} MB</span>{item.notes&&<small>{item.notes}</small>}<small>{new Date(item.created_at).toLocaleString("es-CO",{dateStyle:"short",timeStyle:"short"})}</small></div>
+     </article>)}</div>:<div className="service-evidence-empty"><ImageIcon size={20}/><span>Aún no hay fotos ni videos en esta orden.</span></div>}
+     {!["delivered","cancelled"].includes(active.status)&&<form className="service-evidence-form" onSubmit={uploadEvidence}><div className="form-grid">
+      <div className="field"><label>Tipo de evidencia</label><select value={evidenceCategory} onChange={e=>setEvidenceCategory(e.target.value as Evidence["category"])}>{evidenceCategories.map(cat=><option key={cat.value} value={cat.value}>{cat.label}</option>)}</select></div>
+      <div className="field"><label>Fotos o videos (máx. 30 MB cada uno)</label><input id="service-evidence-files" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,video/mp4,video/quicktime,video/webm" multiple onChange={e=>setEvidenceFiles(Array.from(e.target.files??[]))}/><small>Seleccionados: {evidenceFiles.length}</small></div>
+      <div className="field service-full"><label>Observaciones</label><input maxLength={500} value={evidenceNotes} onChange={e=>setEvidenceNotes(e.target.value)} placeholder="Ej. fisura en esquina superior derecha"/></div>
+     </div><button className="button secondary" type="submit" disabled={uploadingEvidence||saving||evidenceFiles.length===0}><Upload size={14}/>{uploadingEvidence?"Subiendo archivos…":"Guardar evidencias"}</button></form>}
+    </div>
     <div className="service-finance-grid"><div><small>Presupuesto</small><b>{fmt(Number(active.estimated_cost))}</b></div><div><small>Repuestos</small><b>{fmt(Number(active.parts_cost))}</b></div><div><small>Abonado</small><b>{fmt(paid)}</b></div><div><small>Saldo estimado</small><b className={paid>Number(active.final_cost??active.estimated_cost)?"success":""}>{fmt(Math.max(0,Number(active.final_cost??active.estimated_cost)-paid))}</b></div></div>
     <div className="service-subsection"><div className="service-subsection-head"><h3><Package size={15}/> Repuestos utilizados</h3><span>{parts.length} líneas</span></div>
      {parts.length>0&&<div className="service-part-list">{parts.map(p=><div key={p.id}><span><b>{p.products?.name??"Repuesto"}</b><small>{p.quantity} × {fmt(Number(p.unit_cost))}</small></span><strong>{fmt(Number(p.quantity)*Number(p.unit_cost))}</strong></div>)}</div>}
