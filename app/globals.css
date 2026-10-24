@@ -736,3 +736,47 @@ body{min-height:100%;background:var(--bg)}
 .assistant-answer-list{display:grid;gap:9px;padding-left:20px;color:var(--ink);line-height:1.55;margin:16px 0 20px}
 .assistant-answer-list li::marker{color:var(--blue)}
 @media(max-width:600px){.assistant-question{align-items:stretch;flex-direction:column}.assistant-question input,.assistant-question .button{width:100%}.assistant-questions{grid-template-columns:1fr}}
+
+
+/* Assistant dashboard: readable contrast on the dark app theme */
+.app .assistant-questions .assistant-question-card {
+  color: #e8eef6;
+  background: linear-gradient(145deg, #171d25, #11161d);
+  border-color: #2c3642;
+  box-shadow: 0 3px 10px #00000018;
+  min-height: 88px;
+  padding: 18px 20px;
+  line-height: 1.45;
+}
+.app .assistant-questions .assistant-question-card span {
+  color: #e8eef6;
+  font-size: 13px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.app .assistant-questions .assistant-question-card > svg:first-child {
+  color: #38a8ff;
+}
+.app .assistant-questions .assistant-question-card > svg:last-child {
+  color: #8fa2b7;
+  flex-shrink: 0;
+}
+.app .assistant-questions .assistant-question-card:hover {
+  background: linear-gradient(145deg, #1d2936, #151e28);
+  border-color: #4384b5;
+  box-shadow: 0 7px 20px #00000028;
+}
+.app .assistant-questions .assistant-question-card:focus-visible {
+  outline: 2px solid #54b6ff;
+  outline-offset: 3px;
+}
+.app .assistant-questions .assistant-question-card:disabled {
+  opacity: 1;
+  cursor: wait;
+}
+@media (max-width: 600px) {
+  .app .assistant-questions .assistant-question-card {
+    min-height: 76px;
+    padding: 16px;
+  }
+}
