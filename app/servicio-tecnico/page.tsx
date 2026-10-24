@@ -73,7 +73,7 @@ export default function ServiceTechnicalPage(){
   setSaving(false);
   if(error){setError("No se pudo crear la orden: "+error.message);return}
   setMessage("Orden de servicio creada correctamente.");
-  setDraft(initialDraft);setShowForm(false);await load();
+  setDraft(initialDraft);setShowForm(false);setParts([]);setPayments([]);await load();
   if(data?.id)setSelected(data.id);
  }
  async function saveProgress(e:FormEvent){
