@@ -718,3 +718,9 @@ body{min-height:100%;background:var(--bg)}
 .cash-page .collaborator-table{min-width:680px}
 .cash-page .collaborator-status{gap:4px}
 @media(max-width:760px){.cash-reconciliation{grid-template-columns:1fr}.cash-page .page-head{align-items:flex-start;gap:12px}.cash-page .page-head .button{white-space:nowrap}}
+
+.dashboard-stat{position:relative;display:flex;flex-direction:column;gap:8px;min-width:0;text-decoration:none;color:inherit;cursor:pointer;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease}
+.dashboard-stat:hover{transform:translateY(-2px);border-color:#b9d1e7;box-shadow:0 8px 24px rgba(15,36,62,.08)}
+.dashboard-stat:focus-visible{outline:3px solid #5ba5e5;outline-offset:3px}
+.dashboard-stat label{display:flex;align-items:center;gap:7px;cursor:pointer}
+.dashboard-stat-arrow{position:absolute;right:16px;top:15px;color:var(--blue)}
