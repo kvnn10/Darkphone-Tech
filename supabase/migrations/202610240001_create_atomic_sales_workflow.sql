@@ -61,7 +61,7 @@ begin
     v_quantity := (v_item->>'quantity')::integer;
     if v_product.stock_quantity < v_quantity then raise exception 'Existencias insuficientes para "%". Disponible: %.',v_product.name,v_product.stock_quantity; end if;
     if v_product.has_imei then
-      if jsonb_typeof(v_item->'serial_ids') <> 'array' or jsonb_array_length(v_item->'serial_ids') <> v_quantity then
+      if coalesce(jsonb_typeof(v_item->'serial_ids'),'') <> 'array' or coalesce(jsonb_array_length(v_item->'serial_ids'),0) <> v_quantity then
         raise exception 'El producto "%" requiere un IMEI/serial disponible por unidad.',v_product.name;
       end if;
       if exists(select 1 from jsonb_array_elements_text(v_item->'serial_ids') sid left join public.product_serials ps on ps.id=sid.value::uuid where ps.id is null or ps.product_id<>v_product.id or ps.status<>'available') then
