@@ -1,13 +1,23 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" role="img" aria-labelledby="title desc">
-<title id="title">DarkPhone</title><desc id="desc">Apple-inspired white repair emblem with two dark gears on a premium black field.</desc>
-<defs><linearGradient id="metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff"/><stop offset=".55" stop-color="#e7eaf0"/><stop offset="1" stop-color="#9ba8b8"/></linearGradient><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#20242b"/><stop offset="1" stop-color="#070809"/></linearGradient></defs>
-<rect width="240" height="240" rx="54" fill="url(#bg)"/><rect x="1" y="1" width="238" height="238" rx="53" fill="none" stroke="#a9b4c4" stroke-opacity=".25"/>
-<path d="M126 47c-2-20 15-36 37-38 2 22-15 39-37 38Z" fill="url(#metal)"/>
-<path d="M111 75C87 53 51 62 36 91c-24 46 4 106 24 128 13 15 24 5 39-2 13-6 23 1 37 5 20 7 37-8 51-31-22-12-29-39-14-59 5-7 11-12 18-15-18-29-50-31-80-15Z" fill="url(#metal)"/>
-<path d="M112 111c-22 1-42 17-49 36-6 16 4 31 20 35 12 3 20-6 31-16 12-12 20-25 27-42-9-9-17-13-29-13Z" fill="url(#bg)"/>
-<g fill="url(#bg)" stroke="url(#bg)" stroke-width="7" stroke-linecap="square">
-<circle cx="151" cy="103" r="20" fill="none"/>
-<path d="M151 74v9m0 40v9m-29-29h9m40 0h9m-49-20 7 7m28 28 7 7m0-42-7 7m-28 28-7 7"/>
-<circle cx="126" cy="144" r="13" fill="none"/>
-<path d="M126 124v7m0 26v7m-20-20h7m26 0h7m-34-14 5 5m18 18 5 5m0-28-5 5m-18 18-5 5"/>
-</g></svg>
+<title id="title">DarkPhone</title><desc id="desc">White Apple-shaped repair emblem with a hand and two black gears.</desc>
+<defs><linearGradient id="silver" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff"/><stop offset=".58" stop-color="#f0f2f5"/><stop offset="1" stop-color="#c2cad5"/></linearGradient><linearGradient id="black" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#171a1f"/><stop offset="1" stop-color="#050607"/></linearGradient></defs>
+<rect width="240" height="240" rx="48" fill="url(#black)"/>
+<rect x="1" y="1" width="238" height="238" rx="47" fill="none" stroke="#aeb9c9" stroke-opacity=".19"/>
+<path d="M122 49C118 28 137 13 159 10c1 21-15 38-37 39Z" fill="url(#silver)"/>
+<path d="M118 73C96 54 65 60 48 80 29 102 31 139 43 169c9 23 22 44 35 46 12 2 20-9 34-9 13 0 23 10 37 8 15-2 28-22 36-39-20-11-30-30-25-48 3-12 11-21 23-28-15-24-43-31-65-21Z" fill="url(#silver)"/>
+<!-- bite and negative-space repair hand -->
+<path d="M129 111c-16-2-31 7-41 19-8 10-13 22-12 33 1 10 8 17 18 17 11 0 19-8 28-17 10-10 18-21 24-36-5-8-10-13-17-16Z" fill="url(#black)"/>
+<path d="M158 96c11-8 24-6 31 4 5 8 4 17-2 24l-11 12-12-10 9-11c3-4 2-8-1-10-4-2-7 0-10 3l-13 14-10-10 19-16Z" fill="url(#black)"/>
+<!-- gear one -->
+<g transform="translate(151 91)" fill="url(#black)">
+<rect x="-4.5" y="-26" width="9" height="10" rx="1"/><rect x="-4.5" y="16" width="9" height="10" rx="1"/><rect x="-26" y="-4.5" width="10" height="9" rx="1"/><rect x="16" y="-4.5" width="10" height="9" rx="1"/>
+<rect x="-4.5" y="-26" width="9" height="10" rx="1" transform="rotate(45)"/><rect x="-4.5" y="16" width="9" height="10" rx="1" transform="rotate(45)"/><rect x="-26" y="-4.5" width="10" height="9" rx="1" transform="rotate(45)"/><rect x="16" y="-4.5" width="10" height="9" rx="1" transform="rotate(45)"/>
+<circle r="18"/><circle r="9" fill="url(#silver)"/>
+</g>
+<!-- gear two -->
+<g transform="translate(124 132)" fill="url(#black)">
+<rect x="-3.5" y="-20" width="7" height="8" rx="1"/><rect x="-3.5" y="12" width="7" height="8" rx="1"/><rect x="-20" y="-3.5" width="8" height="7" rx="1"/><rect x="12" y="-3.5" width="8" height="7" rx="1"/>
+<rect x="-3.5" y="-20" width="7" height="8" rx="1" transform="rotate(45)"/><rect x="-3.5" y="12" width="7" height="8" rx="1" transform="rotate(45)"/><rect x="-20" y="-3.5" width="8" height="7" rx="1" transform="rotate(45)"/><rect x="12" y="-3.5" width="8" height="7" rx="1" transform="rotate(45)"/>
+<circle r="13.5"/><circle r="6" fill="url(#silver)"/>
+</g>
+</svg>
