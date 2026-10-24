@@ -1,7 +1,8 @@
 "use client";
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { Activity, LockKeyhole, LogIn } from "lucide-react";
+import Image from "next/image";
+import { LockKeyhole, LogIn, ShieldCheck } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 export default function LoginPage(){
@@ -23,5 +24,5 @@ export default function LoginPage(){
     router.replace("/");
     router.refresh();
   }
-  return <main className="login-page"><section className="login-card"><div className="login-brand"><div className="brand-mark"><Activity size={21}/></div><div><strong>Darkphone Tech</strong><small>Gestión del negocio</small></div></div><div className="login-heading"><span className="login-icon"><LockKeyhole size={20}/></span><h1>Iniciar sesión</h1><p>Ingresa con el usuario autorizado para acceder al sistema.</p></div><form onSubmit={submit} className="login-form"><div className="field"><label htmlFor="email">Correo electrónico</label><input id="email" type="email" autoComplete="username" required value={email} onChange={e=>setEmail(e.target.value)} placeholder="tu@empresa.com"/></div><div className="field"><label htmlFor="password">Contraseña</label><input id="password" type="password" autoComplete="current-password" required value={password} onChange={e=>setPassword(e.target.value)} placeholder="Tu contraseña"/></div>{error&&<div className="notice login-error" role="alert">{error}</div>}<button className="button login-submit" type="submit" disabled={busy}>{busy?"Validando acceso…":<><LogIn size={16}/> Entrar al sistema</>}</button></form><p className="login-help">El usuario debe crearse previamente en Supabase Authentication. No hay registro público de usuarios.</p></section></main>;
+  return <main className="login-page"><section className="login-card"><div className="login-brand"><Image className="brand-logo" src="/darkphone-mark.svg" alt="Darkphone Tech" width={52} height={52} priority/><div><strong>Darkphone Tech</strong><small>Gestión integral</small></div></div><div className="login-heading"><span className="login-icon"><ShieldCheck size={20}/></span><h1>Iniciar sesión</h1><p>Ingresa con el usuario autorizado para acceder al sistema.</p></div><form onSubmit={submit} className="login-form"><div className="field"><label htmlFor="email">Correo electrónico</label><input id="email" type="email" autoComplete="username" required value={email} onChange={e=>setEmail(e.target.value)} placeholder="tu@empresa.com"/></div><div className="field"><label htmlFor="password">Contraseña</label><input id="password" type="password" autoComplete="current-password" required value={password} onChange={e=>setPassword(e.target.value)} placeholder="Tu contraseña"/></div>{error&&<div className="notice login-error" role="alert">{error}</div>}<button className="button login-submit" type="submit" disabled={busy}>{busy?"Validando acceso…":<><LogIn size={16}/> Entrar al sistema</>}</button></form><p className="login-help">El usuario debe crearse previamente en Supabase Authentication. No hay registro público de usuarios.</p></section></main>;
 }
