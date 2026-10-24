@@ -335,3 +335,65 @@ body{min-height:100%;background:var(--bg)}
  .app .table-wrap{max-width:100%;overflow-x:auto}
 }
 @media(prefers-reduced-motion:reduce){.app *{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
+/* Sales point-of-sale module */
+.app .sales-layout{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(370px,.92fr);gap:16px;align-items:start}
+.app .sales-layout>.panel{min-width:0}
+.app .sales-catalog>.panel-head>svg,.app .sales-checkout>.panel-head>svg,.app .sales-history>.panel-head>svg{color:#8bcaff}
+.app .sales-product-list{display:grid;gap:8px;max-height:680px;overflow:auto;padding-right:2px}
+.app .sales-product{display:grid;grid-template-columns:40px minmax(0,1fr) 34px;gap:11px;align-items:center;padding:12px;border:1px solid #292f39;background:#10141a;border-radius:12px}
+.app .sales-product-icon{height:38px;width:38px;display:grid;place-items:center;background:#1a2b3b;border:1px solid #2b455c;border-radius:10px;color:#8bcaff}
+.app .sales-product-info{display:grid;gap:4px;min-width:0}
+.app .sales-product-info b{font-size:12px;color:#e9eef5;overflow-wrap:anywhere}
+.app .sales-product-info small{font-size:10px;color:#8996a7;overflow-wrap:anywhere}
+.app .sales-product-info strong{font-size:13px;color:#c8e5ff}
+.app .sales-product .icon-button{height:32px;width:32px}
+.app .sales-checkout form{display:grid;gap:14px}
+.app .sales-cart{display:grid;gap:8px}
+.app .sales-cart-line{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;padding:11px 0;border-bottom:1px solid #292f38}
+.app .sales-cart-name{display:grid;gap:4px;min-width:0}
+.app .sales-cart-name b{font-size:12px;overflow-wrap:anywhere}
+.app .sales-cart-name small{font-size:10px;color:#8996a7}
+.app .sales-qty{display:flex;align-items:center;gap:5px}
+.app .sales-qty>b{min-width:18px;text-align:center;font-size:12px}
+.app .sales-qty .icon-button{width:27px;height:27px}
+.app .sales-line-total{grid-column:1/-1;text-align:right;font-size:12px;color:#d6e8f8}
+.app .sales-totals{display:grid;gap:9px;padding:14px;border-radius:12px;background:#0d1116;border:1px solid #29313b}
+.app .sales-totals>div{display:flex;justify-content:space-between;gap:12px;font-size:12px;color:#9aa5b4}
+.app .sales-totals b{color:#dce5ef}
+.app .sales-totals .sales-grand-total{border-top:1px solid #2d3540;padding-top:11px;margin-top:2px;align-items:center}
+.app .sales-grand-total span{font-weight:700;color:#f1f5fa}
+.app .sales-grand-total strong{font-size:23px;letter-spacing:-.04em;color:#b8dfff}
+.app .sales-pay-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.app .sales-pay-head h3{font-size:13px;margin:0;color:#edf2f8}
+.app .sales-pay-head p{font-size:10px;color:#8d9aab;margin:4px 0 0}
+.app .sales-pay-head .button{white-space:nowrap;padding:8px 10px}
+.app .sales-payment{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) 30px;gap:9px;align-items:end;padding:12px;background:#10141a;border:1px solid #29313b;border-radius:12px}
+.app .sales-payment .field label{font-size:10px}
+.app .sales-payment .field input,.app .sales-payment .field select{padding:9px 8px;font-size:11px}
+.app .sales-payment .sales-reference{grid-column:1/3}
+.app .sales-payment>.icon-button{grid-column:3;grid-row:1/3}
+.app .sales-paid{display:grid;grid-template-columns:1fr auto;gap:7px 12px;padding:0 2px;font-size:11px;color:#9ba7b7}
+.app .sales-paid b{color:#e4ebf4;text-align:right}
+.app .sales-paid .negative{color:#f2c47e}.app .sales-paid .success{color:#73dfb0}
+.app .sales-submit{width:100%;justify-content:center;min-height:48px;font-size:13px}
+.app .sales-submit:disabled{opacity:.45;cursor:not-allowed}
+.app .sales-footnote{display:flex;align-items:flex-start;gap:7px;font-size:10px;line-height:1.5;color:#8491a1;margin:0}
+.app .sales-footnote svg{flex:0 0 auto;color:#8bcaff}
+.app .sales-success{display:flex;align-items:center;gap:12px;padding:14px 16px;margin-bottom:16px;border:1px solid #245343;border-radius:12px;background:#10231e;color:#7ce0b6}
+.app .sales-success>div{display:grid;gap:4px;flex:1;min-width:0}
+.app .sales-success span{font-size:11px;color:#b3d7ca}
+.app .sales-success .button{flex:0 0 auto}
+.app .sales-history{margin-top:16px}
+@media(max-width:1100px){.app .sales-layout{grid-template-columns:minmax(0,1fr)}.app .sales-product-list{max-height:480px}}
+@media(max-width:740px){
+ .app .sales-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .app .sales-layout{gap:12px}
+ .app .sales-product-list{max-height:360px}
+ .app .sales-product{grid-template-columns:34px minmax(0,1fr) 32px;padding:10px;gap:8px}
+ .app .sales-product-icon{width:32px;height:32px}
+ .app .sales-payment{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 28px;gap:7px;padding:9px}
+ .app .sales-payment .sales-reference{grid-column:1/3}
+ .app .sales-success{align-items:flex-start;flex-wrap:wrap}
+ .app .sales-success .button{margin-left:30px}
+}
