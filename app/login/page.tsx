@@ -15,9 +15,11 @@ export default function LoginPage(){
     setError("");
     if(!supabase){setError("Falta configurar NEXT_PUBLIC_SUPABASE_URL y la clave pública en Vercel. Después debes volver a desplegar.");return;}
     setBusy(true);
-    const {error:authError}=await supabase.auth.signInWithPassword({email:email.trim(),password});
+    const {data,error:authError}=await supabase.auth.signInWithPassword({email:email.trim(),password});
+    if(authError){setBusy(false);setError(authError.message==="Invalid login credentials"?"Correo o contraseña incorrectos.":authError.message);return;}
+    const {data:profile,error:profileError}=await supabase.from("profiles").select("role,active").eq("id",data.user.id).maybeSingle();
+    if(profileError || !profile || !profile.active){await supabase.auth.signOut();setBusy(false);setError("El usuario existe, pero no tiene un perfil activo en Darkphone Tech. Debes crear su registro en public.profiles desde el SQL Editor de Supabase.");return;}
     setBusy(false);
-    if(authError){setError(authError.message==="Invalid login credentials"?"Correo o contraseña incorrectos.":authError.message);return;}
     router.replace("/");
     router.refresh();
   }
