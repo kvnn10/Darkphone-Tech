@@ -642,3 +642,19 @@ body{min-height:100%;background:var(--bg)}
 .app .service-page .service-empty span{font-size:10px}
 @media(max-width:1120px){.app .service-page .service-layout{grid-template-columns:1fr}.app .service-page .service-order-list{max-height:430px}}
 @media(max-width:740px){.app .service-page .service-head-actions{width:100%}.app .service-page .service-layout{grid-template-columns:minmax(0,1fr)}.app .service-page .service-toolbar{flex-direction:column}.app .service-page .service-toolbar>select{max-width:none;width:100%}.app .service-page .service-status{max-width:95px;font-size:8px}.app .service-page .service-status-control{grid-template-columns:1fr}.app .service-page .service-inline-form{grid-template-columns:minmax(0,1fr)}.app .service-page .service-full,.app .service-page .service-inline-form .button{grid-column:1}.app .service-page .service-finance-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.app .service-page .service-order-row{align-items:flex-start}.app .service-page .service-order-icon{width:31px;height:31px;flex-basis:31px}.app .service-page .service-order-main b{font-size:10px}}
+
+/* Service order photo/video evidence */
+.app .service-page .service-evidence-section{margin:18px 0;padding-top:16px;border-top:1px solid var(--border,#292929)}
+.app .service-page .service-evidence-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:12px;margin:14px 0}
+.app .service-page .service-evidence-card{min-width:0;overflow:hidden;border:1px solid var(--border,#292929);border-radius:12px;background:var(--panel,#111)}
+.app .service-page .service-evidence-preview{position:relative;display:flex;align-items:center;justify-content:center;aspect-ratio:4/3;overflow:hidden;background:#171717;color:inherit;text-decoration:none}
+.app .service-page .service-evidence-preview img{width:100%;height:100%;object-fit:cover}
+.app .service-page .service-evidence-file{display:flex;flex-direction:column;align-items:center;gap:7px;color:#a7a7a7}
+.app .service-page .service-evidence-open{position:absolute;right:8px;top:8px;display:grid;place-items:center;width:26px;height:26px;border-radius:7px;background:#000a;color:#fff}
+.app .service-page .service-evidence-info{display:flex;flex-direction:column;gap:5px;padding:10px;font-size:11px}
+.app .service-page .service-evidence-info b{overflow-wrap:anywhere;font-size:12px}
+.app .service-page .service-evidence-info span,.app .service-page .service-evidence-info small{color:var(--muted,#999);overflow-wrap:anywhere}
+.app .service-page .service-evidence-empty{display:flex;align-items:center;gap:10px;padding:18px;border:1px dashed var(--border,#333);border-radius:10px;color:var(--muted,#999);font-size:12px}
+.app .service-page .service-evidence-form{display:grid;gap:12px;padding:14px;border:1px solid var(--border,#292929);border-radius:12px;background:var(--panel,#111)}
+.app .service-page .service-evidence-form input[type=file]{width:100%;font-size:11px}
+@media(max-width:640px){.app .service-page .service-evidence-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.app .service-page .service-evidence-form .form-grid{grid-template-columns:minmax(0,1fr)}}
