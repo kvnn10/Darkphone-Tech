@@ -43,6 +43,13 @@ export default function SalesPage(){
  async function createCustomer(){
   if(!supabase)return;setCustomerSaving(true);setMessage("");
   const payload={full_name:newCustomer.full_name.trim(),phone:newCustomer.phone.trim()||null,email:newCustomer.email.trim()||null,document_number:newCustomer.document_number.trim()||null};
+  const checks=await Promise.all([
+   payload.document_number?supabase.from("customers").select("id,full_name,phone").eq("document_number",payload.document_number).limit(1):Promise.resolve({data:[],error:null}),
+   payload.phone?supabase.from("customers").select("id,full_name,phone").eq("phone",payload.phone).limit(1):Promise.resolve({data:[],error:null}),
+   payload.email?supabase.from("customers").select("id,full_name,phone").ilike("email",payload.email).limit(1):Promise.resolve({data:[],error:null})
+  ]);
+  const existing=checks.find(r=>!r.error&&(r.data?.length??0)>0)?.data?.[0] as Customer|undefined;
+  if(existing){setCustomerSaving(false);setCustomerId(existing.id);setShowNewCustomer(false);setNewCustomer({full_name:"",phone:"",email:"",document_number:""});setMessage("Encontré un cliente con el mismo documento, teléfono o correo: "+existing.full_name+". Lo seleccioné para esta venta; revisa sus datos en Clientes.");return}
   const {data,error}=await supabase.from("customers").insert(payload).select("id,full_name,phone").single();
   setCustomerSaving(false);
   if(error){setMessage("No se pudo registrar el cliente: "+error.message);return}
