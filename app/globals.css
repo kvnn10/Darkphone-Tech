@@ -965,3 +965,5 @@ body{min-height:100%;background:var(--bg)}
     font-size: 23px;
   }
 }
+
+@media(max-width:740px){.app .sidebar{padding-top:calc(10px + env(safe-area-inset-top))}.app .content{padding-top:22px}}
