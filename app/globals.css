@@ -397,3 +397,8 @@ body{min-height:100%;background:var(--bg)}
  .app .sales-success{align-items:flex-start;flex-wrap:wrap}
  .app .sales-success .button{margin-left:30px}
 }
+
+.app .field textarea{min-width:0;width:100%;border:1px solid #333c48;border-radius:10px;background:#0d1015;color:#eef3f9;padding:10px 11px;font:inherit;font-size:12px;resize:vertical}
+.app .field textarea::placeholder{color:#6f7b8a}
+.app .field textarea:focus{outline:none;border-color:#5da7df;box-shadow:0 0 0 3px #3c8bc022}
+.app .sales-payment .field select option,.app .sales-payment .field input option{background:#11151b;color:#eef3f9}
