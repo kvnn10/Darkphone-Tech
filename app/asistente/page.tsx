@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Activity, AlertTriangle, ArrowRight, Bot, Boxes, CalendarClock, CircleDollarSign, RefreshCw, Send, ShieldCheck, Wallet, Wrench } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
-type Sale = { id: string; sale_number: number; total: number; status: string; created_at: string };
+type Sale = { id: string; sale_number: number; customer_id: string | null; total: number; status: string; created_at: string };
 type SaleItem = { sale_id: string; quantity: number; unit_cost: number };
 type Product = { id: string; name: string; brand: string | null; model: string | null; stock_quantity: number; min_stock: number; cost_price: number; selling_price: number; active: boolean };
 type Order = { id: string; order_number: number; device_name: string; status: string; received_at: string; promised_at: string | null; estimated_cost: number; final_cost: number | null };
@@ -48,15 +48,14 @@ export default function AssistantPage() {
     if (!supabase) { setError("Supabase no está configurado. Configura las variables de entorno para consultar los datos reales."); setLoading(false); return; }
     if (quiet) setRefreshing(true); else setLoading(true);
     setError("");
-    const start = new Date(); start.setHours(0,0,0,0);
-    const end = new Date(); end.setHours(23,59,59,999);
+    
     const [salesRes, productsRes, ordersRes, sessionsRes, movementsRes, accountsRes, customersRes, receivablePaymentsRes] = await Promise.all([
-      supabase.from("sales").select("id,sale_number,total,status,created_at").gte("created_at", start.toISOString()).lte("created_at", end.toISOString()).order("created_at", { ascending: false }),
+      supabase.from("sales").select("id,sale_number,customer_id,total,status,created_at").order("created_at", { ascending: false }).limit(5000),
       supabase.from("products").select("id,name,brand,model,stock_quantity,min_stock,cost_price,selling_price,active").eq("active", true).order("name"),
       supabase.from("service_orders").select("id,order_number,device_name,status,received_at,promised_at,estimated_cost,final_cost").in("status", [...openStatuses]).order("received_at", { ascending: true }),
       supabase.from("cash_sessions").select("id,opening_amount,opened_at,closed_at").order("opened_at", { ascending: false }).limit(50),
       supabase.from("cash_movements").select("cash_session_id,kind,amount,created_at").order("created_at", { ascending: false }).limit(2000),
-      supabase.from("receivable_accounts").select("id,customer_id,description,total_amount,status,due_date").in("status", ["open","partial","overdue"]),
+      supabase.from("receivable_accounts").select("id,customer_id,description,total_amount,status,due_date").neq("status", "cancelled").limit(5000),
       supabase.from("customers").select("id,full_name,phone"),
       supabase.from("receivable_payments").select("account_id,sale_id,amount"),
     ]);
@@ -75,7 +74,7 @@ export default function AssistantPage() {
     if (saleIds.length) {
       const [itemsRes, salePayRes] = await Promise.all([
         supabase.from("sale_items").select("sale_id,quantity,unit_cost").in("sale_id", saleIds),
-        supabase.from("sale_payments").select("sale_id,amount"),
+        supabase.from("sale_payments").select("sale_id,amount").limit(5000),
       ]);
       if (itemsRes.error || salePayRes.error) setError(prev => [prev, itemsRes.error?.message, salePayRes.error?.message].filter(Boolean).join(" · "));
       setItems((itemsRes.data ?? []) as SaleItem[]);
@@ -88,7 +87,8 @@ export default function AssistantPage() {
   useEffect(() => { void load(); }, [load]);
 
   const todayMetrics = useMemo(() => {
-    const completed = sales.filter(s => s.status === "completed");
+    const today = dateKey(new Date());
+    const completed = sales.filter(s => s.status === "completed" && dateKey(new Date(s.created_at)) === today);
     const total = completed.reduce((sum,s) => sum + Number(s.total),0);
     const ids = new Set(completed.map(s => s.id));
     const cost = items.filter(i => ids.has(i.sale_id)).reduce((sum,i) => sum + Number(i.quantity)*Number(i.unit_cost),0);
@@ -117,7 +117,8 @@ export default function AssistantPage() {
     salePayments.forEach(p => { if(p.sale_id) saleMap.set(p.sale_id,(saleMap.get(p.sale_id)||0)+Number(p.amount)); });
     const saleRows = sales.filter(s => s.status === "completed").map(s => {
       const payments = saleMap.get(s.id) ?? 0;
-      return { key:s.id,customer:"Venta #"+s.sale_number,label:"Venta #"+s.sale_number,balance:Math.max(0,Number(s.total)-payments),due:null as string|null };
+      const customer = customerMap.get(s.customer_id ?? "");
+      return { key:s.id,customer:customer?.full_name ?? "Venta #"+s.sale_number,label:"Venta #"+s.sale_number,balance:Math.max(0,Number(s.total)-payments),due:null as string|null };
     }).filter(a => a.balance > 0);
     return [...accountRows,...saleRows].sort((a,b) => b.balance-a.balance);
   },[accounts,customers,receivablePayments,sales,salePayments]);
