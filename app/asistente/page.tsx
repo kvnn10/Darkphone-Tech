@@ -81,6 +81,7 @@ export default function AssistantPage() {
       if (itemsRes.error || salePayRes.error) setError(prev => [prev, itemsRes.error?.message, salePayRes.error?.message].filter(Boolean).join(" · "));
       setItems((itemsRes.data ?? []) as SaleItem[]);
       setSalePayments((salePayRes.data ?? []) as ReceivablePayment[]);
+    }
 
     setUpdatedAt(new Date().toLocaleTimeString("es-CO", { hour:"2-digit", minute:"2-digit" }));
     setLoading(false); setRefreshing(false);
