@@ -1,28 +1,37 @@
 # Darkphone Tech — Gestión integral
 
-Aplicación de gestión para una tienda de tecnología y servicio técnico, inspirada en los flujos de Nexo Tech y construida con código propio.
+Aplicación web para la operación de una tienda de tecnología y servicio técnico, inspirada en los flujos visuales de Nexo Tech y con código propio.
 
 ## Stack
-- Next.js App Router, React y TypeScript
-- Supabase (PostgreSQL y Auth)
-- GitHub para control de versiones
-- Vercel para despliegues
+- Next.js App Router + TypeScript + React
+- Supabase PostgreSQL y autenticación
+- GitHub y Vercel
 
-## Estado
-Esta es la estructura inicial del proyecto. La interfaz de panel e inventario se está desarrollando. Antes de usarlo con operaciones reales deben configurarse Supabase, autenticación, roles y permisos, y probarse los flujos transaccionales de inventario, ventas, caja y servicio técnico.
+## Estado actual
+- Estructura inicial Next.js y navegación por módulos.
+- Panel consultando conteos básicos de Supabase cuando hay conexión.
+- Inventario con búsqueda, alertas de mínimo y registro de artículos mediante Supabase.
+- Esquema inicial SQL: perfiles, clientes, productos y seriales/IMEI, ventas y pagos divididos, caja, gastos, órdenes técnicas, garantías, movimientos y auditoría.
+- Los módulos distintos a inventario son referencias visuales; faltan sus flujos de datos y transacciones.
+
+**No está listo para producción** hasta que se configure Supabase, se implemente autenticación con roles, se prueben las políticas RLS y se completen las transacciones de ventas/caja/servicio.
 
 ## Configuración local
-1. Instala Node.js 20.9 o superior.
+1. Instala Node.js 20.9 o posterior.
 2. Ejecuta `npm install`.
 3. Copia `.env.example` a `.env.local`.
-4. Configura `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY` con los valores de tu proyecto Supabase.
-5. Ejecuta `supabase/schema.sql` desde Supabase SQL Editor.
-6. Ejecuta `npm run dev`.
+4. Configura `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY` con la URL del proyecto y la clave publicable/anon de Supabase.
+5. En Supabase → SQL Editor, ejecuta `supabase/schema.sql`.
+6. Ejecuta `npm run dev` y abre `http://localhost:3000`.
 
-No subas `.env.local` ni claves secretas a GitHub. Nunca uses una clave `service_role` en el navegador o en variables `NEXT_PUBLIC_*`.
+No compartas contraseñas ni tokens. Nunca publiques `.env.local` o la clave `service_role`; no la pongas en variables `NEXT_PUBLIC_*`.
 
-## Módulos planeados
-Inventario con seriales/IMEI, ventas con pagos divididos, clientes, caja, gastos, cuentas por cobrar, servicio técnico, garantías, reportes, usuarios y asistente.
+## Vercel
+Importa `kvnn10/Darkphone-Tech` desde https://vercel.com/new e incluye las dos variables `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY` en Preview y Production. Cada push a `main` desplegará una actualización.
 
-## Próximo paso
-Agregar la aplicación Next.js inicial, conectar Supabase y desplegar una vista previa en Vercel. El sistema no debe considerarse listo para producción hasta completar autenticación y pruebas de seguridad.
+## Próximas etapas
+1. Conectar la app a Supabase, crear perfil de propietario de forma segura y proteger rutas.
+2. Completar clientes CRUD.
+3. Crear funciones de base de datos transaccionales para ventas, pagos divididos y actualización atómica del inventario.
+4. Conectar caja, gastos, servicio técnico, cartera, garantías y reportes.
+5. Añadir pruebas, respaldo y verificación de seguridad antes de usar datos reales.
