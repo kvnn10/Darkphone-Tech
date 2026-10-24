@@ -29,6 +29,7 @@ const questions = [
 export default function AssistantPage() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [asking, setAsking] = useState(false);
   const [error, setError] = useState("");
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState<{ title: string; body: string; details: string[]; href?: string } | null>(null);
@@ -70,16 +71,17 @@ export default function AssistantPage() {
     setAccounts((accountsRes.data ?? []) as ManualAccount[]);
     setCustomers((customersRes.data ?? []) as Customer[]);
     setReceivablePayments((receivablePaymentsRes.data ?? []) as ReceivablePayment[]);
-    const saleIds = saleRows.map(s => s.id);
-    if (saleIds.length) {
+    const today = dateKey(new Date());
+    const todaySaleIds = saleRows.filter(s => s.status === "completed" && dateKey(new Date(s.created_at)) === today).map(s => s.id);
+    {
       const [itemsRes, salePayRes] = await Promise.all([
-        supabase.from("sale_items").select("sale_id,quantity,unit_cost").in("sale_id", saleIds),
+        todaySaleIds.length ? supabase.from("sale_items").select("sale_id,quantity,unit_cost").in("sale_id", todaySaleIds) : Promise.resolve({ data: [], error: null }),
         supabase.from("sale_payments").select("sale_id,amount").limit(5000),
       ]);
       if (itemsRes.error || salePayRes.error) setError(prev => [prev, itemsRes.error?.message, salePayRes.error?.message].filter(Boolean).join(" · "));
       setItems((itemsRes.data ?? []) as SaleItem[]);
       setSalePayments((salePayRes.data ?? []) as ReceivablePayment[]);
-    } else { setItems([]); setSalePayments([]); }
+
     setUpdatedAt(new Date().toLocaleTimeString("es-CO", { hour:"2-digit", minute:"2-digit" }));
     setLoading(false); setRefreshing(false);
   }, []);
@@ -124,38 +126,49 @@ export default function AssistantPage() {
     return [...accountRows,...saleRows].sort((a,b) => b.balance-a.balance);
   },[accounts,customers,receivablePayments,sales,salePayments]);
 
-  function answerQuestion(raw: string) {
-    const q = raw.toLocaleLowerCase("es");
-    if (q.includes("venta") || q.includes("vend") || q.includes("utilidad") || q.includes("ganancia")) {
+  async function answerQuestion(raw: string) {
+    setQuestion(raw);
+    setAsking(true);
+    setError("");
+    try {
+      if (!supabase) throw new Error("Supabase no está configurado.");
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !sessionData.session?.access_token) throw new Error("Tu sesión no está activa. Inicia sesión nuevamente.");
       const today = dateKey(new Date());
-      const todayIds = new Set(sales.filter(s => s.status==="completed" && dateKey(new Date(s.created_at))===today).map(s=>s.id));
-      const completedItems = items.filter(i => todayIds.has(i.sale_id));
-      const noCost = todayMetrics.count > 0 && completedItems.some(i => Number(i.unit_cost)===0);
-      setAnswer({title:"Ventas de hoy",body:"Se registraron "+todayMetrics.count+" ventas completadas por "+money(todayMetrics.total)+". El margen bruto estimado es "+money(todayMetrics.gross)+".",details:["Costo de los productos vendidos: "+money(todayMetrics.cost),noCost?"Aviso: hay artículos sin costo registrado; el margen puede estar sobreestimado.":"El cálculo usa el costo guardado en cada artículo vendido.","No incluye gastos operativos ni equivale a utilidad neta."],href:"/reportes"}); return;
+      const todaySales = sales.filter(s => s.status === "completed" && dateKey(new Date(s.created_at)) === today);
+      const context = {
+        fechaLocal: today,
+        ventasHoy: { cantidad: todayMetrics.count, totalCOP: todayMetrics.total, costoProductosCOP: todayMetrics.cost, margenBrutoEstimadoCOP: todayMetrics.gross },
+        productosActivos: products.length,
+        productosPorReponer: lowStock.slice(0, 30).map(p => ({ nombre: p.name, marca: p.brand, modelo: p.model, stock: p.stock_quantity, minimo: p.min_stock, costoCOP: p.cost_price, precioCOP: p.selling_price })),
+        ordenesAbiertas: orders.slice(0, 80).map(o => ({ numero: o.order_number, equipo: o.device_name, estado: o.status, recibida: o.received_at, prometida: o.promised_at, costoEstimadoCOP: o.estimated_cost, costoFinalCOP: o.final_cost })),
+        saldosPendientes: receivables.slice(0, 40).map(r => ({ cliente: r.customer, concepto: r.label, saldoCOP: r.balance, vencimiento: r.due })),
+        caja: activeCash && cashMetrics ? { abiertaDesde: activeCash.opened_at, baseCOP: activeCash.opening_amount, ingresosCOP: cashMetrics.income, egresosCOP: cashMetrics.out, efectivoEsperadoCOP: cashMetrics.expected } : null,
+        ventasCompletadasHoy: todaySales.length,
+        notas: ["La utilidad disponible es solo margen bruto estimado (ventas menos costo de artículos), no utilidad neta.", "Los datos se consultan respetando el acceso del usuario en Supabase.", "No hay teléfonos ni datos de autenticación en el contexto."]
+      };
+      const response = await fetch("/api/assistant", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${sessionData.session.access_token}` },
+        body: JSON.stringify({ question: raw, context })
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.error || "No se pudo obtener una respuesta de la IA.");
+      setAnswer({ title: "Asistente IA", body: payload.answer, details: payload.notes ?? [], href: payload.href });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Ocurrió un error al consultar la IA.");
+    } finally {
+      setAsking(false);
     }
-    if (q.includes("invent") || q.includes("repon") || q.includes("stock") || q.includes("producto")) {
-      setAnswer({title:"Productos por reponer",body:lowStock.length?"Hay "+lowStock.length+" referencias en su nivel mínimo o por debajo.":"No hay productos activos en el nivel mínimo de stock.",details:lowStock.slice(0,10).map(p=>p.name+(p.brand?" · "+p.brand:"")+": "+p.stock_quantity+" unidades (mínimo "+p.min_stock+")").concat(lowStock.length>10?["Y "+(lowStock.length-10)+" referencias más."]:[]),href:"/inventario"}); return;
-    }
-    if (q.includes("orden") || q.includes("repar") || q.includes("termin") || q.includes("técnic") || q.includes("tecnic")) {
-      setAnswer({title:"Órdenes que requieren atención",body:delayedOrders.length?delayedOrders.length+" órdenes abiertas llevan 3 días o más, o superaron su fecha prometida.":"No hay órdenes abiertas que superen 3 días ni su fecha prometida.",details:delayedOrders.slice(0,10).map(o=>"Orden #"+o.order_number+" · "+o.device_name+" · "+Math.max(0,Math.floor((Date.now()-new Date(o.received_at).getTime())/86400000))+" días · Estado: "+o.status).concat(delayedOrders.length>10?["Y "+(delayedOrders.length-10)+" órdenes más."]:[]),href:"/servicio-tecnico"}); return;
-    }
-    if (q.includes("cartera") || q.includes("saldo") || q.includes("deuda") || q.includes("deben") || q.includes("cliente")) {
-      const total = receivables.reduce((sum,r)=>sum+r.balance,0);
-      setAnswer({title:"Saldos pendientes",body:"Hay "+receivables.length+" saldos calculados por un total de "+money(total)+".",details:receivables.slice(0,10).map(r=>r.customer+" · "+r.label+": "+money(r.balance)+(r.due?" · vence "+r.due:"")).concat(receivables.length>10?["Y "+(receivables.length-10)+" saldos más."]:[]),href:"/cuentas-por-cobrar"}); return;
-    }
-    if (q.includes("caja") || q.includes("efectivo") || q.includes("dinero")) {
-      setAnswer({title:"Efectivo esperado en caja",body:cashMetrics?"La caja abierta debería tener "+money(cashMetrics.expected)+" en efectivo.":"No hay una caja abierta en este momento.",details:cashMetrics?["Base inicial: "+money(Number(activeCash?.opening_amount)||0),"Ingresos y ajustes registrados: "+money(cashMetrics.income),"Egresos y retiros registrados: "+money(cashMetrics.out),"La cifra depende de que todos los movimientos en efectivo estén registrados en Caja. Los ajustes manuales no se suman automáticamente."]:["Abre una caja en el módulo Caja e ingresos para comenzar a controlar el efectivo."],href:"/caja"}); return;
-    }
-    setAnswer({title:"Puedo ayudarte con la operación",body:"Por ahora puedo responder preguntas operativas usando los datos consultados del sistema.",details:questions.map(item=>item.label)});
   }
-  function submitQuestion(e: FormEvent) { e.preventDefault(); if(question.trim()) answerQuestion(question.trim()); }
+  function submitQuestion(e: FormEvent) { e.preventDefault(); if(question.trim() && !asking) void answerQuestion(question.trim()); }
 
   return <div className="content">
     <div className="page-head"><div><div className="eyebrow">ASISTENCIA OPERATIVA</div><h1>Asistente del negocio</h1><p>Consulta ventas, inventario, órdenes, cartera y caja desde un solo lugar.</p></div><button className="button secondary" onClick={()=>void load(true)} disabled={loading||refreshing}><RefreshCw size={14}/>{refreshing?"Actualizando…":"Actualizar datos"}</button></div>
-    <section className="hero"><div className="eyebrow"><Bot size={14}/> DATOS DEL SISTEMA</div><h2>¿Qué necesitas saber?</h2><p>Elige una pregunta o escríbela. Por ahora responde mediante consultas y reglas sobre los datos disponibles; aún no usa un modelo generativo. Es de solo lectura y no modifica operaciones.</p><form onSubmit={submitQuestion} className="assistant-question"><input value={question} onChange={e=>setQuestion(e.target.value)} placeholder="Ej. ¿Qué productos debo reponer?" aria-label="Pregunta para el asistente"/><button className="button" disabled={!question.trim()||loading}><Send size={14}/> Consultar</button></form>{updatedAt&&<small className="service-footnote">Datos actualizados a las {updatedAt}.</small>}</section>
+    <section className="hero"><div className="eyebrow"><Bot size={14}/> DATOS DEL SISTEMA</div><h2>¿Qué necesitas saber?</h2><p>Elige una pregunta o escríbela. Usa IA generativa para razonar sobre tus preguntas y los datos operativos disponibles. Es de solo lectura y no modifica operaciones.</p><form onSubmit={submitQuestion} className="assistant-question"><input value={question} onChange={e=>setQuestion(e.target.value)} placeholder="Ej. ¿Qué productos debo reponer?" aria-label="Pregunta para el asistente"/><button className="button" disabled={!question.trim()||loading||asking}><Send size={14}/>{asking?" Pensando…":" Consultar"}</button></form>{updatedAt&&<small className="service-footnote">Datos actualizados a las {updatedAt}.</small>}</section>
     {error&&<div className="notice service-error" role="alert">{error}</div>}
-    <div className="grid assistant-questions">{questions.map(item=>{const Icon=item.icon;return <button key={item.key} className="panel assistant-question-card" onClick={()=>{setQuestion(item.label);answerQuestion(item.label)}} disabled={loading}><Icon size={18}/><span>{item.label}</span><ArrowRight size={15}/></button>})}</div>
-    {loading?<div className="panel empty">Consultando los datos de Darkphone Tech…</div>:answer&&<section className="panel assistant-answer"><div className="panel-head"><div><div className="eyebrow">RESPUESTA</div><h2>{answer.title}</h2></div><ShieldCheck size={20}/></div><p>{answer.body}</p>{answer.details.length>0&&<ul className="assistant-answer-list">{answer.details.map((d,i)=><li key={i}>{d}</li>)}</ul>}{answer.href&&<Link className="button secondary" href={answer.href}>Abrir módulo <ArrowRight size={14}/></Link>}</section>}
+    <div className="grid assistant-questions">{questions.map(item=>{const Icon=item.icon;return <button key={item.key} className="panel assistant-question-card" onClick={()=>{setQuestion(item.label);void answerQuestion(item.label)}} disabled={loading||asking}><Icon size={18}/><span>{item.label}</span><ArrowRight size={15}/></button>})}</div>
+    {loading?<div className="panel empty">Consultando los datos de Darkphone Tech…</div>:asking?<div className="panel empty">La IA está analizando tu pregunta y los datos disponibles…</div>:answer&&<section className="panel assistant-answer"><div className="panel-head"><div><div className="eyebrow">RESPUESTA</div><h2>{answer.title}</h2></div><ShieldCheck size={20}/></div><p>{answer.body}</p>{answer.details.length>0&&<ul className="assistant-answer-list">{answer.details.map((d,i)=><li key={i}>{d}</li>)}</ul>}{answer.href&&<Link className="button secondary" href={answer.href}>Abrir módulo <ArrowRight size={14}/></Link>}</section>}
     <div className="grid stats"><article className="stat"><label><Boxes size={14}/> Referencias por reponer</label><strong>{loading?"—":lowStock.length}</strong><small>Stock actual ≤ mínimo configurado</small></article><article className="stat"><label><Wrench size={14}/> Órdenes abiertas</label><strong>{loading?"—":orders.length}</strong><small>Sin entregar ni cancelar</small></article><article className="stat"><label><CalendarClock size={14}/> Órdenes demoradas</label><strong>{loading?"—":delayedOrders.length}</strong><small>3 días o fecha prometida vencida</small></article><article className="stat"><label><AlertTriangle size={14}/> Estado de caja</label><strong>{loading?"—":activeCash?"Abierta":"Cerrada"}</strong><small>{activeCash&&cashMetrics?money(cashMetrics.expected):"Sin turno activo"}</small></article></div>
     <p className="service-footnote">Nota: el margen mostrado es bruto estimado, no utilidad neta. La cartera automática de ventas se calcula con los pagos registrados en sale_payments; las cuentas manuales usan sus abonos registrados.</p>
   </div>;
