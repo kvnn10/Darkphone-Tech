@@ -1,6 +1,6 @@
 "use client";
 import { useCallback,useEffect,useMemo,useState } from "react";
-import { Search,ShoppingCart,Plus,Minus,Trash2,RefreshCw,UserRound,CreditCard,Banknote,CheckCircle2,Clock3,ReceiptText } from "lucide-react";
+import { Search,ShoppingCart,Plus,Minus,Trash2,RefreshCw,UserRound,CreditCard,Banknote,CheckCircle2,Clock3,ReceiptText,UserPlus,X } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 type Product={id:string;name:string;brand:string|null;model:string|null;sku:string|null;category:string|null;cost_price:number;selling_price:number;stock_quantity:number;has_imei:boolean;active:boolean};
 type Customer={id:string;full_name:string;phone:string|null};
@@ -15,6 +15,8 @@ export default function SalesPage(){
  const [products,setProducts]=useState<Product[]>([]),[customers,setCustomers]=useState<Customer[]>([]),[sales,setSales]=useState<Sale[]>([]),[serials,setSerials]=useState<Serial[]>([]);
  const [cart,setCart]=useState<CartLine[]>([]),[query,setQuery]=useState(""),[customerId,setCustomerId]=useState(""),[discount,setDiscount]=useState("0"),[notes,setNotes]=useState("");
  const [payments,setPayments]=useState<Payment[]>([{method:"cash",amount:"",reference:""}]);
+ const [showNewCustomer,setShowNewCustomer]=useState(false),[customerSaving,setCustomerSaving]=useState(false);
+ const [newCustomer,setNewCustomer]=useState({full_name:"",phone:"",email:"",document_number:""});
  const [loading,setLoading]=useState(true),[saving,setSaving]=useState(false),[message,setMessage]=useState(""),[success,setSuccess]=useState<{sale_number:number;total:number;balance:number}|null>(null);
  const load=useCallback(async()=>{
   if(!supabase){setMessage("Falta configurar Supabase para consultar productos y guardar ventas.");setLoading(false);return}
@@ -38,6 +40,16 @@ export default function SalesPage(){
  function quantity(id:string,delta:number){setCart(old=>old.map(l=>l.product.id===id?{...l,quantity:Math.max(1,Math.min(l.product.stock_quantity,l.quantity+delta))}:l))}
  function remove(id:string){setCart(old=>old.filter(l=>l.product.id!==id))}
  function changePayment(index:number,patch:Partial<Payment>){setPayments(old=>old.map((p,i)=>i===index?{...p,...patch}:p))}
+ async function createCustomer(e:React.FormEvent){
+  e.preventDefault();if(!supabase)return;setCustomerSaving(true);setMessage("");
+  const payload={full_name:newCustomer.full_name.trim(),phone:newCustomer.phone.trim()||null,email:newCustomer.email.trim()||null,document_number:newCustomer.document_number.trim()||null};
+  const {data,error}=await supabase.from("customers").insert(payload).select("id,full_name,phone").single();
+  setCustomerSaving(false);
+  if(error){setMessage("No se pudo registrar el cliente: "+error.message);return}
+  const customer=data as Customer;setCustomers(old=>[...old,customer].sort((a,b)=>a.full_name.localeCompare(b.full_name,"es")));
+  setCustomerId(customer.id);setNewCustomer({full_name:"",phone:"",email:"",document_number:""});setShowNewCustomer(false);
+  setMessage("Cliente registrado y asociado a esta venta.");
+ }
  async function submit(e:React.FormEvent){
   e.preventDefault();setMessage("");setSuccess(null);
   if(!supabase){setMessage("Supabase no está configurado.");return}
@@ -68,7 +80,8 @@ export default function SalesPage(){
    </section>
    <section className="panel sales-checkout"><div className="panel-head"><div><h2>Resumen de venta</h2><p>Confirma los artículos y los datos de cobro.</p></div><ShoppingCart size={19}/></div>
     <form onSubmit={submit}>
-     <div className="field"><label><UserRound size={13} style={{display:"inline",verticalAlign:"-2px"}}/> Cliente (opcional)</label><select value={customerId} onChange={e=>setCustomerId(e.target.value)}><option value="">Venta de mostrador / sin cliente</option>{customers.map(c=><option value={c.id} key={c.id}>{c.full_name}{c.phone?" · "+c.phone:""}</option>)}</select></div>
+     <div className="field"><div className="sales-customer-label"><label><UserRound size={13} style={{display:"inline",verticalAlign:"-2px"}}/> Cliente (opcional)</label><button type="button" className="button secondary sales-add-customer" onClick={()=>setShowNewCustomer(v=>!v)}><UserPlus size={13}/>{showNewCustomer?"Cerrar":"Nuevo cliente"}</button></div><select value={customerId} onChange={e=>setCustomerId(e.target.value)}><option value="">Venta de mostrador / sin cliente</option>{customers.map(c=><option value={c.id} key={c.id}>{c.full_name}{c.phone?" · "+c.phone:""}</option>)}</select></div>
+     {showNewCustomer&&<div className="sales-new-customer"><div className="panel-head"><div><h3>Registrar cliente</h3><p>Se guardará y quedará seleccionado en esta venta.</p></div><button type="button" className="icon-button" aria-label="Cerrar" onClick={()=>setShowNewCustomer(false)}><X size={14}/></button></div><div className="field"><label>Nombre completo *</label><input required maxLength={160} value={newCustomer.full_name} onChange={e=>setNewCustomer({...newCustomer,full_name:e.target.value})} placeholder="Nombre y apellidos"/></div><div className="field"><label>Teléfono / WhatsApp</label><input maxLength={40} value={newCustomer.phone} onChange={e=>setNewCustomer({...newCustomer,phone:e.target.value})} placeholder="+57…"/></div><div className="field"><label>Correo electrónico</label><input type="email" maxLength={254} value={newCustomer.email} onChange={e=>setNewCustomer({...newCustomer,email:e.target.value})} placeholder="cliente@correo.com"/></div><div className="field"><label>Documento / identificación</label><input maxLength={80} value={newCustomer.document_number} onChange={e=>setNewCustomer({...newCustomer,document_number:e.target.value})} placeholder="Cédula, NIT u otro"/></div><button type="button" className="button sales-new-customer-save" disabled={customerSaving||!newCustomer.full_name.trim()} onClick={()=>{const form=document.getElementById("sales-new-customer-form") as HTMLFormElement|null;form?.requestSubmit()}}>{customerSaving?"Guardando…":"Guardar y asociar"}</button><form id="sales-new-customer-form" onSubmit={createCustomer} /></div>
      <div className="sales-cart">{cart.length===0?<div className="empty">Agrega productos desde el catálogo para iniciar.</div>:cart.map(l=><div className="sales-cart-line" key={l.product.id}><div className="sales-cart-name"><b>{l.product.name}</b><small>{fmt(l.product.selling_price)} c/u</small></div><div className="sales-qty"><button type="button" className="icon-button" aria-label="Disminuir" onClick={()=>setCart(old=>old.map(x=>x.product.id===l.product.id?{...x,quantity:Math.max(1,x.quantity-1),serial_ids:x.serial_ids.slice(0,Math.max(1,x.quantity-1))}:x))}><Minus size={12}/></button><b>{l.quantity}</b><button type="button" className="icon-button" aria-label="Aumentar" disabled={l.quantity>=l.product.stock_quantity} onClick={()=>quantity(l.product.id,1)}><Plus size={12}/></button><button type="button" className="icon-button delete-button" aria-label="Quitar" onClick={()=>remove(l.product.id)}><Trash2 size={13}/></button></div><strong className="sales-line-total">{fmt(l.product.selling_price*l.quantity)}</strong>{l.product.has_imei&&<div className="sales-serials">{Array.from({length:l.quantity},(_,idx)=><div className="field" key={idx}><label>IMEI / serial · unidad {idx+1}</label><select value={l.serial_ids[idx]??""} onChange={e=>setCart(old=>old.map(x=>x.product.id===l.product.id?{...x,serial_ids:Array.from({length:x.quantity},(_,j)=>j===idx?e.target.value:(x.serial_ids[j]??""))}:x))} required><option value="">Selecciona serial disponible</option>{serials.filter(s=>s.product_id===l.product.id&&(!cart.some(x=>x.product.id!==l.product.id&&x.serial_ids.includes(s.id))||l.serial_ids.includes(s.id))).map(s=><option value={s.id} key={s.id}>{s.serial_number}</option>)}</select></div>)}</div>}</div>)}</div>
      <div className="field"><label>Descuento total (COP)</label><input type="number" min="0" max={subtotal} step="1" value={discount} onChange={e=>setDiscount(e.target.value)}/></div>
      <div className="sales-totals"><div><span>Subtotal</span><b>{fmt(subtotal)}</b></div><div><span>Descuento</span><b>− {fmt(discountValue)}</b></div><div className="sales-grand-total"><span>Total</span><strong>{fmt(total)}</strong></div></div>
