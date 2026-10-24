@@ -402,3 +402,59 @@ body{min-height:100%;background:var(--bg)}
 .app .field textarea::placeholder{color:#6f7b8a}
 .app .field textarea:focus{outline:none;border-color:#5da7df;box-shadow:0 0 0 3px #3c8bc022}
 .app .sales-payment .field select option,.app .sales-payment .field input option{background:#11151b;color:#eef3f9}
+
+
+/* Clientes: directorio, ficha e historial */
+.customers-page .customers-layout{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:16px;align-items:start}
+.customers-page .panel{min-width:0}
+.customers-page .customers-list{display:grid;gap:5px;max-height:680px;overflow:auto}
+.customer-row{width:100%;display:flex;align-items:center;gap:12px;text-align:left;padding:12px;border:1px solid transparent;border-radius:11px;background:#fff;color:var(--ink);cursor:pointer;min-width:0}
+.customer-row:hover{background:#f7faff;border-color:#e4edf7}
+.customer-row.selected{background:#edf6ff;border-color:#b9d9f4}
+.customer-avatar{width:39px;height:39px;flex:0 0 39px;display:grid;place-items:center;border-radius:12px;background:linear-gradient(145deg,#e8f2fc,#d6e7f8);color:#1769aa;font-size:12px;font-weight:800;letter-spacing:.02em}
+.customer-avatar.large{width:58px;height:58px;flex-basis:58px;border-radius:17px;font-size:17px}
+.customer-row-main{display:grid;gap:4px;min-width:0;flex:1}
+.customer-row-main b{font-size:12px;overflow-wrap:anywhere}
+.customer-row-main small{font-size:10px;color:var(--muted);overflow-wrap:anywhere}
+.customer-row-action{font-size:10px;color:var(--blue);white-space:nowrap}
+.customer-detail{position:sticky;top:16px}
+.customer-profile{display:flex;flex-direction:column;align-items:center;text-align:center;padding:10px 8px 20px}
+.customer-profile h3{font-size:17px;letter-spacing:-.3px;margin:12px 0 5px;overflow-wrap:anywhere}
+.customer-profile small{font-size:10px;color:var(--muted)}
+.customer-contact-list{display:grid;gap:0;border-top:1px solid #edf2f7;border-bottom:1px solid #edf2f7;padding:6px 0}
+.customer-contact-list>div{display:flex;align-items:center;gap:10px;padding:10px 3px;font-size:11px;min-width:0}
+.customer-contact-list svg{color:#8193a8;flex:0 0 auto}
+.customer-contact-list span{overflow-wrap:anywhere}
+.customer-note{margin-top:14px;padding:12px;border-radius:10px;background:#f7f9fc;font-size:11px;line-height:1.6}
+.customer-note p{margin:5px 0 0;color:var(--muted);white-space:pre-wrap;overflow-wrap:anywhere}
+.customer-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:15px 0}
+.customer-metrics>div{padding:11px 9px;background:#f7f9fc;border:1px solid #edf1f6;border-radius:10px;min-width:0}
+.customer-metrics small{display:block;font-size:9px;line-height:1.5;color:var(--muted);min-height:27px}
+.customer-metrics b{display:block;font-size:14px;margin-top:6px;overflow-wrap:anywhere}
+.customer-history{margin-top:15px}
+.customer-history-title{display:flex;align-items:center;gap:8px;font-size:11px;margin-bottom:8px}
+.customer-history-title svg{color:var(--blue)}
+.customer-history-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid #edf2f7;font-size:11px}
+.customer-history-row:last-child{border-bottom:0}
+.customer-history-row>span{display:grid;gap:5px;min-width:0}
+.customer-history-row>span b{overflow-wrap:anywhere}
+.customer-history-row small{font-size:10px;color:var(--muted)}
+.customer-history-row strong{white-space:nowrap;font-size:11px}
+.customer-history-empty{font-size:11px;color:var(--muted);padding:12px;background:#f8fafd;border-radius:9px}
+.customers-empty-detail{min-height:250px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;color:var(--muted);padding:20px}
+.customers-empty-detail svg{color:#9aabbe}
+.customers-empty-detail b{font-size:12px;color:var(--ink)}
+.customers-empty-detail p{font-size:11px;line-height:1.6;max-width:260px;margin:0}
+.customers-form-panel{border-color:#c9def2;box-shadow:0 8px 28px #1264a310}
+.customers-notes-field{grid-column:1/-1}
+.customers-page textarea,.sales-page textarea{width:100%;min-width:0;resize:vertical;border:1px solid var(--line);border-radius:8px;background:#fff;padding:10px 11px;font:inherit;font-size:12px;line-height:1.5;outline:none}
+.customers-page textarea:focus,.sales-page textarea:focus{border-color:#6da7d5;box-shadow:0 0 0 3px #e4f1fd}
+.sales-customer-label{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.sales-add-customer{padding:6px 8px;font-size:10px;white-space:nowrap}
+.sales-new-customer{display:grid;gap:11px;margin:0 0 15px;padding:14px;border:1px solid #cfe1f3;border-radius:12px;background:#f8fbff}
+.sales-new-customer .panel-head{margin-bottom:0}
+.sales-new-customer .panel-head h3{font-size:12px;margin:0}
+.sales-new-customer .panel-head p{font-size:10px}
+.sales-new-customer-save{justify-content:center;width:100%}
+@media(max-width:900px){.customers-page .customers-layout{grid-template-columns:1fr}.customer-detail{position:static}}
+@media(max-width:520px){.customers-page .customers-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.customer-row{padding:10px 7px;gap:8px}.customer-row-action{display:none}.customer-metrics{gap:5px}.customer-metrics>div{padding:9px 7px}.customer-metrics b{font-size:12px}.customers-page .panel{padding:14px}}
