@@ -41,6 +41,7 @@ export default function SalesPage(){
   if(!cart.length){setMessage("Agrega al menos un producto.");return}
   if(discountValue>subtotal){setMessage("El descuento no puede superar el subtotal.");return}
   if(paid>total){setMessage("Los pagos superan el total. Ajusta los valores.");return}
+  if(total<=0||Math.abs(paid-total)>0.5){setMessage("Para cerrar la venta, los medios de pago deben cubrir exactamente el total. Los pagos a crédito se habilitarán cuando esté listo el módulo de cuentas por cobrar.");return}
   if(cart.some(l=>l.quantity>l.product.stock_quantity)){setMessage("El inventario cambió. Actualiza los datos antes de continuar.");return}
   setSaving(true);
   const payloadItems=cart.map(l=>({product_id:l.product.id,quantity:l.quantity,serial_ids:l.serial_ids}));
@@ -71,7 +72,7 @@ export default function SalesPage(){
      {payments.map((p,i)=><div className="sales-payment" key={i}><div className="field"><label>Medio</label><select value={p.method} onChange={e=>changePayment(i,{method:e.target.value as PayMethod})}>{methods.map(m=><option key={m.value} value={m.value}>{m.label}</option>)}</select></div><div className="field"><label>Valor (COP)</label><input type="number" min="0" step="1" value={p.amount} onChange={e=>changePayment(i,{amount:e.target.value})} placeholder="0"/></div><div className="field sales-reference"><label>Referencia (opcional)</label><input value={p.reference} onChange={e=>changePayment(i,{reference:e.target.value})} placeholder="N.º operación"/></div>{payments.length>1&&<button type="button" className="icon-button delete-button" aria-label="Quitar medio de pago" onClick={()=>setPayments(old=>old.filter((_,j)=>j!==i))}><Trash2 size={14}/></button>}</div>)}
      <div className="sales-paid"><span>Recibido</span><b>{fmt(paid)}</b><span>{balance>0?"Pendiente":"Saldo"}</span><b className={balance>0?"negative":"success"}>{fmt(balance)}</b></div>
      <div className="field"><label>Notas (opcional)</label><textarea rows={2} value={notes} onChange={e=>setNotes(e.target.value)} placeholder="Observaciones de la venta…"/></div>
-     <button type="submit" className="button sales-submit" disabled={saving||loading||cart.length===0||paid>total}><Banknote size={17}/>{saving?"Registrando venta…":"Confirmar venta"}</button>
+     <button type="submit" className="button sales-submit" disabled={saving||loading||cart.length===0||total<=0||paid>total||Math.abs(paid-total)>0.5}><Banknote size={17}/>{saving?"Registrando venta…":"Confirmar venta"}</button>
      <p className="sales-footnote"><CreditCard size={13}/> El servidor debe validar la venta y actualizar existencias y caja de forma atómica.</p>
     </form>
    </section>
