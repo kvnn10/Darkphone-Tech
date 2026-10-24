@@ -148,3 +148,11 @@ body{min-height:100%;background:#08090b}
  .login-card-premium .login-form{gap:12px}
  .login-premium .login-footer{display:none}
 }
+
+/* Input shells keep one continuous border, including on mobile Safari */
+.login-card-premium .login-form .login-input-icon input{border:0!important;background:transparent!important;box-shadow:none!important;border-radius:0!important}
+.login-card-premium .login-input-icon{border:1px solid #555b65;background:#080a0d88}
+.login-card-premium .login-input-icon:focus-within{border-color:#c4d0df;box-shadow:0 0 0 4px #b8c8de16}
+.login-card-premium .login-password-wrap{padding-right:44px}
+.login-card-premium .login-password-toggle{right:9px}
+@supports(padding:max(0px)){.login-premium{padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}}
