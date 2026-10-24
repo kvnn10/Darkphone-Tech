@@ -499,3 +499,53 @@ body{min-height:100%;background:var(--bg)}
 .app .sales-customer-results>button small{font-size:10px;color:#91a2b7}
 .app .sales-customer-results>button>span:last-child{font-size:10px;color:#8dcaff;white-space:nowrap}
 .app .sales-customer-no-results{font-size:11px;color:#94a3b8;padding:8px;margin:0}
+
+
+/* Customer directory — all surfaces respect graphite theme */
+.app .customer-row{
+ background:linear-gradient(145deg,#171c23,#12161c);color:#e8eef6;
+ border-color:#292f39;
+}
+.app .customer-row:hover{background:#1b2632;border-color:#354c61}
+.app .customer-row.selected{background:#1a2a39;border-color:#3b6688}
+.app .customer-avatar{background:linear-gradient(145deg,#20374a,#172839);color:#9bd4ff}
+.app .customer-row-main b{color:#edf3fa}
+.app .customer-row-main small{color:#8f9eaf}
+.app .customer-row-action{color:#8ccaff}
+.app .customer-contact-list{border-color:#2b323d}
+.app .customer-contact-list>div{color:#c6d0dc}
+.app .customer-contact-list svg,.app .customer-history-title svg{color:#8bcaff}
+.app .customer-profile small{color:#8f9eaf}
+.app .customer-note,.app .customer-metrics>div,.app .customer-history-empty{
+ background:#11161d;border-color:#2b323d;color:#c7d1de;
+}
+.app .customer-note p,.app .customer-metrics small,.app .customer-history-row small{color:#91a0b1}
+.app .customer-metrics b,.app .customer-history-row strong{color:#edf3fa}
+.app .customer-history-row{border-bottom-color:#2b323d;color:#e5edf6}
+.app .customers-empty-detail{color:#9aa7b7}
+.app .customers-empty-detail b{color:#e4ebf3}
+.app .customers-empty-detail p{color:#8f9eaf}
+.app .customers-form-panel{background:linear-gradient(150deg,#171c23,#111419);border-color:#344354}
+.app .customers-page textarea{background:#0d1015;border-color:#333c48;color:#eef3f9}
+.app .customers-page textarea::placeholder{color:#6f7b8a}
+.app .customers-page textarea:focus{border-color:#5da7df;box-shadow:0 0 0 3px #3c8bc022}
+.app .customers-page .form-actions .button.secondary{background:#202b38;color:#e6f0fa;border-color:#3b4d60}
+.app .customers-page .customer-detail .icon-button{background:#171c23;border-color:#303946;color:#aeb9c7}
+.app .customers-page .customer-detail .icon-button:hover{background:#203142;border-color:#3c6b91;color:#bfe4ff}
+
+/* Refined dashboard KPI cards and restrained inventory alerts */
+.app .dashboard-page .stats{gap:14px}
+.app .dashboard-page .stat{position:relative;padding:21px 22px 19px;background:linear-gradient(145deg,#171d25,#11151b);border-color:#2b3440;box-shadow:0 8px 24px #0002}
+.app .dashboard-page .stat:after{height:2px;background:linear-gradient(90deg,#4c8ab7,#9dcaf0);opacity:.8}
+.app .dashboard-page .stat label{font-size:11px;letter-spacing:.015em;color:#a4afbd;margin-bottom:12px}
+.app .dashboard-page .stat strong{font-size:29px;line-height:1.15;letter-spacing:-.045em;color:#f3f6fa}
+.app .dashboard-page .stat small{font-size:10px;color:#8d9aaa;line-height:1.5;margin-top:8px}
+.app .dashboard-page .stat.kpi-warning:after{background:linear-gradient(90deg,#b88b4b,#e0c28b)}
+.app .dashboard-page .stat.kpi-warning strong{color:#e7c58c}
+.app .dashboard-page .stat.kpi-critical:after{background:linear-gradient(90deg,#a95d64,#d9959b)}
+.app .dashboard-page .stat.kpi-critical strong{color:#e7a0a5}
+.app .dashboard-page .stock-alert{display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid #51432e;background:#201c16;border-radius:10px;color:#e4c58e;font-size:11px}
+.app .dashboard-page .stock-alert.critical{border-color:#57353a;background:#211619;color:#e5a0a5}
+.app .dashboard-page .stock-alert .alert-dot{width:7px;height:7px;border-radius:50%;background:#d5ad68;flex:0 0 auto}
+.app .dashboard-page .stock-alert.critical .alert-dot{background:#d9858c}
+.app .dashboard-page .stock-alert small{display:block;color:#a8a09a;margin-top:3px;font-size:10px}
