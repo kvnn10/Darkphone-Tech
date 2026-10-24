@@ -6,26 +6,27 @@ import { Plus, Search, RefreshCw, Receipt, Trash2, X, CalendarDays, WalletCards,
 
 type Expense = {
   id: string;
-  description: string;
+  concept: string;
   category: string;
   amount: number;
-  payment_method: "cash" | "transfer" | "card" | "other";
+  payment_method: "cash" | "bank_transfer" | "debit_card" | "credit_card" | "nequi" | "daviplata" | "other";
   expense_date: string;
   responsible: string | null;
   notes: string | null;
   created_at: string;
 };
 type ExpenseForm = {
-  description: string; category: string; amount: string; payment_method: Expense["payment_method"];
+  concept: string; category: string; amount: string; payment_method: Expense["payment_method"];
   expense_date: string; responsible: string; notes: string;
 };
 const categories = ["Arriendo", "Servicios públicos", "Nómina", "Inventario e insumos", "Transporte", "Marketing", "Mantenimiento", "Comisiones bancarias", "Impuestos", "Otros"];
 const methods: { value: Expense["payment_method"]; label: string }[] = [
-  { value: "cash", label: "Efectivo" }, { value: "transfer", label: "Transferencia" },
-  { value: "card", label: "Tarjeta" }, { value: "other", label: "Otro medio" },
+  { value: "cash", label: "Efectivo" }, { value: "bank_transfer", label: "Transferencia bancaria" },
+  { value: "debit_card", label: "Tarjeta débito" }, { value: "credit_card", label: "Tarjeta crédito" },
+  { value: "nequi", label: "Nequi" }, { value: "daviplata", label: "DaviPlata" }, { value: "other", label: "Otro medio" },
 ];
 const today = () => { const d = new Date(); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); };
-const blank = (): ExpenseForm => ({ description: "", category: "Otros", amount: "", payment_method: "cash", expense_date: today(), responsible: "", notes: "" });
+const blank = (): ExpenseForm => ({ concept: "", category: "Otros", amount: "", payment_method: "cash", expense_date: today(), responsible: "", notes: "" });
 const money = (n: number) => new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(Number(n) || 0);
 const shortDate = (s: string) => new Date(s + "T12:00:00").toLocaleDateString("es-CO", { day: "2-digit", month: "short", year: "numeric" });
 
@@ -49,7 +50,7 @@ export default function ExpensesPage() {
     }
     setLoading(true);
     const { data, error } = await supabase.from("expenses")
-      .select("id,description,category,amount,payment_method,expense_date,responsible,notes,created_at")
+      .select("id,concept,category,amount,payment_method,expense_date,responsible,notes,created_at")
       .order("expense_date", { ascending: false }).order("created_at", { ascending: false }).limit(2000);
     if (error) {
       setExpenses([]);
@@ -73,7 +74,7 @@ export default function ExpensesPage() {
       const d = new Date(e.expense_date + "T12:00:00");
       const inPeriod = period === "all" || (period === "month" && d >= monthStart) || (period === "year" && d >= yearStart);
       const inCategory = categoryFilter === "all" || e.category === categoryFilter;
-      const matches = [e.description, e.category, e.responsible, e.notes].some(v => v?.toLocaleLowerCase("es").includes(q));
+      const matches = [e.concept, e.category, e.responsible, e.notes].some(v => v?.toLocaleLowerCase("es").includes(q));
       return inPeriod && inCategory && matches;
     });
   }, [expenses, query, categoryFilter, period]);
@@ -86,7 +87,7 @@ export default function ExpensesPage() {
   function openNew() { setEditing(null); setForm(blank()); setShowForm(true); setMessage(""); }
   function openEdit(e: Expense) {
     setEditing(e.id);
-    setForm({ description: e.description, category: e.category, amount: String(e.amount), payment_method: e.payment_method, expense_date: e.expense_date, responsible: e.responsible ?? "", notes: e.notes ?? "" });
+    setForm({ concept: e.concept, category: e.category, amount: String(e.amount), payment_method: e.payment_method, expense_date: e.expense_date, responsible: e.responsible ?? "", notes: e.notes ?? "" });
     setShowForm(true); setMessage("");
   }
   async function save(e: React.FormEvent<HTMLFormElement>) {
@@ -97,7 +98,7 @@ export default function ExpensesPage() {
     setSaving(true); setMessage("");
     const { data: authData } = await supabase.auth.getUser();
     const payload = {
-      description: form.description.trim(), category: form.category, amount,
+      concept: form.concept.trim(), category: form.category, amount,
       payment_method: form.payment_method, expense_date: form.expense_date,
       responsible: form.responsible.trim() || null, notes: form.notes.trim() || null,
       ...(!editing && authData.user ? { created_by: authData.user.id } : {}),
@@ -112,7 +113,7 @@ export default function ExpensesPage() {
     await load();
   }
   async function removeExpense(expense: Expense) {
-    if (!supabase || !window.confirm(`¿Eliminar el gasto "${expense.description}" por ${money(expense.amount)}? Esta acción no se puede deshacer.`)) return;
+    if (!supabase || !window.confirm(`¿Eliminar el gasto "${expense.concept}" por ${money(expense.amount)}? Esta acción no se puede deshacer.`)) return;
     const { error } = await supabase.from("expenses").delete().eq("id", expense.id);
     if (error) { setMessage("No se pudo eliminar el gasto: " + error.message); return; }
     setMessage("Gasto eliminado."); await load();
@@ -138,7 +139,7 @@ export default function ExpensesPage() {
       <div className="panel-head"><div><h2>{editing ? "Editar gasto" : "Nuevo gasto"}</h2><p>Completa los datos para mantener el registro contable.</p></div><button className="icon-button" aria-label="Cerrar formulario" onClick={() => setShowForm(false)}><X size={17}/></button></div>
       <form onSubmit={save}>
         <div className="form-grid">
-          <div className="field"><label htmlFor="expense-description">Concepto *</label><input id="expense-description" required minLength={2} maxLength={160} value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="Ej. Pago de internet" /></div>
+          <div className="field"><label htmlFor="expense-concept">Concepto *</label><input id="expense-concept" required minLength={2} maxLength={160} value={form.concept} onChange={e => setForm({ ...form, concept: e.target.value })} placeholder="Ej. Pago de internet" /></div>
           <div className="field"><label htmlFor="expense-category">Categoría *</label><select id="expense-category" value={form.category} onChange={e => setForm({ ...form, category: e.target.value })}>{categories.map(c => <option key={c}>{c}</option>)}</select></div>
           <div className="field"><label htmlFor="expense-amount">Valor (COP) *</label><input id="expense-amount" type="number" min="1" step="1" required value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} placeholder="0" /></div>
           <div className="field"><label htmlFor="expense-date">Fecha del gasto *</label><input id="expense-date" type="date" required value={form.expense_date} onChange={e => setForm({ ...form, expense_date: e.target.value })} /></div>
@@ -159,7 +160,7 @@ export default function ExpensesPage() {
       </div>
       {loading ? <div className="empty">Cargando gastos...</div> : filtered.length === 0 ? <div className="empty"><TrendingDown size={24} style={{ margin: "0 auto 8px" }}/><div>No hay gastos para estos filtros.</div><p>Registra un gasto o cambia el periodo seleccionado.</p></div> :
       <div className="table-wrap"><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Categoría</th><th>Medio de pago</th><th>Responsable</th><th style={{ textAlign: "right" }}>Valor</th><th>Acciones</th></tr></thead><tbody>
-        {filtered.map(e => <tr key={e.id}><td>{shortDate(e.expense_date)}</td><td><strong>{e.description}</strong>{e.notes && <div className="muted" style={{ fontSize: 10, marginTop: 4 }}>{e.notes}</div>}</td><td><span className="pill">{e.category}</span></td><td>{methods.find(m => m.value === e.payment_method)?.label ?? "Otro medio"}</td><td>{e.responsible || "—"}</td><td style={{ textAlign: "right", fontWeight: 700 }}>{money(e.amount)}</td><td><div className="row-actions"><button className="icon-button" title="Editar gasto" aria-label={`Editar ${e.description}`} onClick={() => openEdit(e)}><Pencil size={15}/></button><button className="icon-button danger" title="Eliminar gasto" aria-label={`Eliminar ${e.description}`} onClick={() => void removeExpense(e)}><Trash2 size={15}/></button></div></td></tr>)}
+        {filtered.map(e => <tr key={e.id}><td>{shortDate(e.expense_date)}</td><td><strong>{e.concept}</strong>{e.notes && <div className="muted" style={{ fontSize: 10, marginTop: 4 }}>{e.notes}</div>}</td><td><span className="pill">{e.category}</span></td><td>{methods.find(m => m.value === e.payment_method)?.label ?? "Otro medio"}</td><td>{e.responsible || "—"}</td><td style={{ textAlign: "right", fontWeight: 700 }}>{money(e.amount)}</td><td><div className="row-actions"><button className="icon-button" title="Editar gasto" aria-label={`Editar ${e.concept}`} onClick={() => openEdit(e)}><Pencil size={15}/></button><button className="icon-button danger" title="Eliminar gasto" aria-label={`Eliminar ${e.concept}`} onClick={() => void removeExpense(e)}><Trash2 size={15}/></button></div></td></tr>)}
       </tbody></table></div>}
       <div className="expenses-foot"><CalendarDays size={14}/> Los valores están expresados en pesos colombianos (COP). Los permisos de lectura y escritura se validan en Supabase.</div>
     </section>
