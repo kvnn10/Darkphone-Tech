@@ -23,6 +23,7 @@ const statusLabel=(s:string)=>statuses.find(x=>x.value===s)?.label??s;
 export default function ServiceTechnicalPage(){
  const [orders,setOrders]=useState<Order[]>([]),[customers,setCustomers]=useState<Customer[]>([]),[products,setProducts]=useState<Product[]>([]);
  const [parts,setParts]=useState<Part[]>([]),[payments,setPayments]=useState<Payment[]>([]),[evidence,setEvidence]=useState<Evidence[]>([]);
+ const [accessCode,setAccessCode]=useState(""),[showAccessCode,setShowAccessCode]=useState(false);
  const [selected,setSelected]=useState<string>(""),[loading,setLoading]=useState(true),[saving,setSaving]=useState(false);
  const [query,setQuery]=useState(""),[statusFilter,setStatusFilter]=useState("all"),[showForm,setShowForm]=useState(false);
  const [draft,setDraft]=useState<Draft>(initialDraft),[message,setMessage]=useState(""),[error,setError]=useState("");
@@ -75,17 +76,19 @@ export default function ServiceTechnicalPage(){
   }catch(err){setError(err instanceof Error?err.message:"No se pudieron guardar las evidencias.")}finally{setUploadingEvidence(false)}
  }
  async function openOrder(o:Order){
-  setSelected(o.id);setDiagnosis(o.diagnosis??"");setWorkNotes(o.work_notes??"");setFinalCost(String(o.final_cost??o.estimated_cost??""));setMessage("");setError("");
+  setSelected(o.id);setDiagnosis(o.diagnosis??"");setWorkNotes(o.work_notes??"");setFinalCost(String(o.final_cost??o.estimated_cost??""));setAccessCode("");setShowAccessCode(false);setMessage("");setError("");
   if(!supabase)return;
-  const [pa,py]=await Promise.all([
+  const [pa,py,credential]=await Promise.all([
    supabase.from("service_order_parts").select("id,service_order_id,product_id,quantity,unit_cost,created_at,products(name,sku)").eq("service_order_id",o.id).order("created_at",{ascending:false}),
-   supabase.from("service_payments").select("id,amount,method,reference,created_at").eq("service_order_id",o.id).order("created_at",{ascending:false})
+   supabase.from("service_payments").select("id,amount,method,reference,created_at").eq("service_order_id",o.id).order("created_at",{ascending:false}),
+   supabase.from("device_access_credentials").select("access_code").eq("service_order_id",o.id).maybeSingle()
   ]);
+  if(credential.error)setError("No se pudo consultar la clave (verifica tus permisos): "+credential.error.message);else setAccessCode(credential.data?.access_code??"");
   if(pa.error)setError("No se pudieron cargar los repuestos. Verifica que esté aplicada la migración avanzada: "+pa.error.message);else setParts((pa.data??[]) as unknown as Part[]);
   if(py.error)setError("No se pudieron cargar los abonos: "+py.error.message);else setPayments((py.data??[]) as Payment[]);
   await loadEvidence(o.id);
  }
- function closeDetail(){setSelected("");setParts([]);setPayments([]);setEvidence([]);setEvidenceFiles([]);setMessage("");setError("");}
+ function closeDetail(){setSelected("");setParts([]);setPayments([]);setEvidence([]);setEvidenceFiles([]);setAccessCode("");setShowAccessCode(false);setMessage("");setError("");}
  async function createOrder(e:FormEvent){
   e.preventDefault();if(!supabase)return;
   if(!draft.device_name.trim()||!draft.reported_fault.trim()){setError("Completa el equipo y la falla reportada.");return}
@@ -176,6 +179,7 @@ export default function ServiceTechnicalPage(){
    <section className="panel service-detail-panel">{!active?<div className="service-detail-empty"><ClipboardCheck size={30}/><h2>Detalle de la orden</h2><p>Selecciona una orden para editar el diagnóstico, cambiar su estado, gestionar repuestos y registrar abonos.</p></div>:<div className="service-detail">
     <div className="service-detail-head"><div><span className="eyebrow">ORDEN #{active.order_number}</span><h2>{active.device_name}</h2><p>{active.customers?.full_name??"Sin cliente asociado"}{active.customers?.phone?" · "+active.customers.phone:""}</p></div><button className="icon-button" type="button" onClick={closeDetail} aria-label="Cerrar detalle"><X size={15}/></button></div>
     <div className="service-device-meta"><span><Smartphone size={14}/>{active.serial_number||"Sin IMEI / serial"}</span><span><CalendarClock size={14}/>Recibido: {dateFmt(active.received_at)}</span><span><Clock3 size={14}/>Prometido: {dateFmt(active.promised_at)}</span></div>
+    <div className="service-subsection"><div className="service-subsection-head"><h3>Clave / patrón de desbloqueo</h3><span>{accessCode?"Guardada":"Sin clave registrada"}</span></div>{accessCode&&<div className="service-inline-form"><input readOnly type={showAccessCode?"text":"password"} value={accessCode} aria-label="Clave de desbloqueo"/><button type="button" className="button secondary" onClick={()=>setShowAccessCode(v=>!v)}>{showAccessCode?"Ocultar clave":"Mostrar clave"}</button></div>}<small>Visible únicamente para personal con permisos de acceso a credenciales.</small></div>
     <div className="service-status-control"><label>Estado de la orden</label><select value={active.status} disabled={saving||active.status==="cancelled"} onChange={e=>void changeStatus(e.target.value as Status)}>{statuses.map(s=><option key={s.value} value={s.value}>{s.label}</option>)}</select></div>
     {active.status==="awaiting_approval"&&<div className="service-approval-note"><Clock3 size={15}/><span>Presupuesto pendiente de aprobación. Para continuar, cambia el estado a «En reparación» cuando el cliente autorice.</span></div>}
     <form className="service-progress-form" onSubmit={saveProgress}><div className="field"><label>Falla reportada</label><div className="service-reported-fault">{active.reported_fault}</div></div><div className="field"><label>Diagnóstico</label><textarea rows={3} value={diagnosis} onChange={e=>setDiagnosis(e.target.value)} placeholder="Hallazgos y pruebas realizadas"/></div><div className="field"><label>Trabajo realizado / notas técnicas</label><textarea rows={3} value={workNotes} onChange={e=>setWorkNotes(e.target.value)} placeholder="Reparación realizada, pruebas finales, observaciones"/></div><div className="field"><label>Costo final al cliente (COP)</label><input type="number" min="0" step="1" value={finalCost} onChange={e=>setFinalCost(e.target.value)} placeholder="0"/></div><button className="button secondary service-save-progress" type="submit" disabled={saving}><Save size={13}/> Guardar diagnóstico y costos</button></form>
