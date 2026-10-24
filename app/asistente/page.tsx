@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { Activity, AlertTriangle, ArrowRight, Bot, Boxes, CalendarClock, CircleDollarSign, RefreshCw, Send, ShieldCheck, Wallet, Wrench } from "lucide-react";
 import { supabase } from "@/lib/supabase";
@@ -57,7 +57,7 @@ export default function AssistantPage() {
       supabase.from("cash_movements").select("cash_session_id,kind,amount,created_at").order("created_at", { ascending: false }).limit(2000),
       supabase.from("receivable_accounts").select("id,customer_id,description,total_amount,status,due_date").neq("status", "cancelled").limit(5000),
       supabase.from("customers").select("id,full_name,phone"),
-      supabase.from("receivable_payments").select("account_id,sale_id,amount"),
+      supabase.from("receivable_payments").select("account_id,sale_id,amount").limit(5000),
     ]);
     const failures = [salesRes,productsRes,ordersRes,sessionsRes,movementsRes,accountsRes,customersRes,receivablePaymentsRes].filter(r => r.error);
     if (failures.length) setError("Algunos datos no se pudieron consultar. Revisa los permisos o la estructura de Supabase. " + failures.map(r => r.error?.message).join(" · "));
@@ -103,7 +103,7 @@ export default function AssistantPage() {
   const cashMetrics = useMemo(() => {
     if (!activeCash) return null;
     const rows = movements.filter(m => m.cash_session_id === activeCash.id);
-    const income = rows.filter(m => m.kind === "income" || m.kind === "adjustment").reduce((sum,m) => sum+Number(m.amount),0);
+    const income = rows.filter(m => m.kind === "income").reduce((sum,m) => sum+Number(m.amount),0);
     const out = rows.filter(m => m.kind === "expense" || m.kind === "withdrawal").reduce((sum,m) => sum+Number(m.amount),0);
     return { expected: Number(activeCash.opening_amount)+income-out, income, out };
   },[activeCash,movements]);
@@ -127,7 +127,9 @@ export default function AssistantPage() {
   function answerQuestion(raw: string) {
     const q = raw.toLocaleLowerCase("es");
     if (q.includes("venta") || q.includes("vend") || q.includes("utilidad") || q.includes("ganancia")) {
-      const completedItems = items.filter(i => sales.some(s => s.id===i.sale_id && s.status==="completed"));
+      const today = dateKey(new Date());
+      const todayIds = new Set(sales.filter(s => s.status==="completed" && dateKey(new Date(s.created_at))===today).map(s=>s.id));
+      const completedItems = items.filter(i => todayIds.has(i.sale_id));
       const noCost = todayMetrics.count > 0 && completedItems.some(i => Number(i.unit_cost)===0);
       setAnswer({title:"Ventas de hoy",body:"Se registraron "+todayMetrics.count+" ventas completadas por "+money(todayMetrics.total)+". El margen bruto estimado es "+money(todayMetrics.gross)+".",details:["Costo de los productos vendidos: "+money(todayMetrics.cost),noCost?"Aviso: hay artículos sin costo registrado; el margen puede estar sobreestimado.":"El cálculo usa el costo guardado en cada artículo vendido.","No incluye gastos operativos ni equivale a utilidad neta."],href:"/reportes"}); return;
     }
@@ -142,7 +144,7 @@ export default function AssistantPage() {
       setAnswer({title:"Saldos pendientes",body:"Hay "+receivables.length+" saldos calculados por un total de "+money(total)+".",details:receivables.slice(0,10).map(r=>r.customer+" · "+r.label+": "+money(r.balance)+(r.due?" · vence "+r.due:"")).concat(receivables.length>10?["Y "+(receivables.length-10)+" saldos más."]:[]),href:"/cuentas-por-cobrar"}); return;
     }
     if (q.includes("caja") || q.includes("efectivo") || q.includes("dinero")) {
-      setAnswer({title:"Efectivo esperado en caja",body:cashMetrics?"La caja abierta debería tener "+money(cashMetrics.expected)+" en efectivo.":"No hay una caja abierta en este momento.",details:cashMetrics?["Base inicial: "+money(Number(activeCash?.opening_amount)||0),"Ingresos y ajustes registrados: "+money(cashMetrics.income),"Egresos y retiros registrados: "+money(cashMetrics.out),"La cifra depende de que todos los movimientos en efectivo estén registrados en Caja."]:["Abre una caja en el módulo Caja e ingresos para comenzar a controlar el efectivo."],href:"/caja"}); return;
+      setAnswer({title:"Efectivo esperado en caja",body:cashMetrics?"La caja abierta debería tener "+money(cashMetrics.expected)+" en efectivo.":"No hay una caja abierta en este momento.",details:cashMetrics?["Base inicial: "+money(Number(activeCash?.opening_amount)||0),"Ingresos y ajustes registrados: "+money(cashMetrics.income),"Egresos y retiros registrados: "+money(cashMetrics.out),"La cifra depende de que todos los movimientos en efectivo estén registrados en Caja. Los ajustes manuales no se suman automáticamente."]:["Abre una caja en el módulo Caja e ingresos para comenzar a controlar el efectivo."],href:"/caja"}); return;
     }
     setAnswer({title:"Puedo ayudarte con la operación",body:"Por ahora puedo responder preguntas operativas usando los datos consultados del sistema.",details:questions.map(item=>item.label)});
   }

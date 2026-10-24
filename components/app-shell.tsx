@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
-import { Boxes, ShoppingCart, Wrench, Users, Wallet, HandCoins, Receipt, CreditCard, ShieldCheck, ChartNoAxesCombined, Sparkles, Bot, LayoutDashboard, LogOut, ChevronRight } from "lucide-react";
+import { Boxes, ShoppingCart, Wrench, Users, Wallet, HandCoins, Receipt, CreditCard, ShieldCheck, ChartNoAxesCombined, Bot, LayoutDashboard, LogOut, ChevronRight } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { supabase } from "@/lib/supabase";
 
