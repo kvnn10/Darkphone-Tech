@@ -88,7 +88,21 @@ export default function ServiceTechnicalPage(){
   if(py.error)setError("No se pudieron cargar los abonos: "+py.error.message);else setPayments((py.data??[]) as Payment[]);
   await loadEvidence(o.id);
  }
- function closeDetail(){setSelected("");setParts([]);setPayments([]);setEvidence([]);setEvidenceFiles([]);setAccessCode("");setShowAccessCode(false);setEditingAccessCode(false);setAccessCodeDraft("");setMessage("");setError("");}\n async function saveAccessCode(){\n  if(!supabase||!active)return;\n  setSaving(true);setError("");setMessage("");\n  const {data:{user},error:userError}=await supabase.auth.getUser();\n  if(userError||!user){setSaving(false);setError("Inicia sesión para guardar la clave.");return}\n  const payload={service_order_id:active.id,access_code:accessCodeDraft.trim(),updated_by:user.id};\n  let result;\n  if(!payload.access_code){setSaving(false);setError("Escribe una clave o patrón antes de guardar.");return}\n  if(accessCode){result=await supabase.from("device_access_credentials").update({access_code:payload.access_code,updated_by:user.id,updated_at:new Date().toISOString()}).eq("service_order_id",active.id)}\n  else result=await supabase.from("device_access_credentials").insert({...payload,created_by:user.id});\n  setSaving(false);\n  if(result?.error){setError("No se pudo guardar la clave: "+result.error.message);return}\n  setAccessCode(payload.access_code);setAccessCodeDraft(payload.access_code);setShowAccessCode(false);setEditingAccessCode(false);setMessage("Clave de desbloqueo guardada.");\n }
+ function closeDetail(){setSelected("");setParts([]);setPayments([]);setEvidence([]);setEvidenceFiles([]);setAccessCode("");setShowAccessCode(false);setEditingAccessCode(false);setAccessCodeDraft("");setMessage("");setError("");}
+ async function saveAccessCode(){
+  if(!supabase||!active)return;
+  setSaving(true);setError("");setMessage("");
+  const {data:{user},error:userError}=await supabase.auth.getUser();
+  if(userError||!user){setSaving(false);setError("Inicia sesión para guardar la clave.");return}
+  const payload={service_order_id:active.id,access_code:accessCodeDraft.trim(),updated_by:user.id};
+  let result;
+  if(!payload.access_code){setSaving(false);setError("Escribe una clave o patrón antes de guardar.");return}
+  if(accessCode){result=await supabase.from("device_access_credentials").update({access_code:payload.access_code,updated_by:user.id,updated_at:new Date().toISOString()}).eq("service_order_id",active.id)}
+  else result=await supabase.from("device_access_credentials").insert({...payload,created_by:user.id});
+  setSaving(false);
+  if(result?.error){setError("No se pudo guardar la clave: "+result.error.message);return}
+  setAccessCode(payload.access_code);setAccessCodeDraft(payload.access_code);setShowAccessCode(false);setEditingAccessCode(false);setMessage("Clave de desbloqueo guardada.");
+ }
  async function createOrder(e:FormEvent){
   e.preventDefault();if(!supabase)return;
   if(!draft.device_name.trim()||!draft.reported_fault.trim()){setError("Completa el equipo y la falla reportada.");return}
