@@ -1,7 +1,8 @@
 "use client";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Activity, Boxes, ShoppingCart, Wrench, Users, Wallet, Receipt, CreditCard, ShieldCheck, ChartNoAxesCombined, Sparkles, LayoutDashboard, LogOut } from "lucide-react";
+import Image from "next/image";
+import { Boxes, ShoppingCart, Wrench, Users, Wallet, Receipt, CreditCard, ShieldCheck, ChartNoAxesCombined, Sparkles, LayoutDashboard, LogOut, ChevronRight } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { supabase } from "@/lib/supabase";
 
@@ -41,5 +42,5 @@ export default function AppShell({children}:{children:ReactNode}){
     router.replace("/login");
     router.refresh();
   }
-  return <div className="app"><aside className="sidebar"><div className="brand"><div className="brand-mark"><Activity size={20}/></div><div><strong>Darkphone Tech</strong><small>Gestión del negocio</small></div></div><div className="nav-label">OPERACIÓN</div><nav className="nav">{links.map(item=>{const Icon=item.icon;const active=item.href==="/" ? pathname==="/" : pathname===item.href||pathname.startsWith(item.href+"/");return <Link key={item.href} href={item.href} className={active?"active":""}><Icon size={15}/>{item.label}</Link>})}</nav><div className="sidebar-foot"><b>Sesión iniciada</b><br/><span>{email}</span><button type="button" className="button secondary logout-button" onClick={signOut}><LogOut size={14}/> Cerrar sesión</button></div></aside><main className="main"><header className="topbar"><span>Centro de operaciones　/　{links.find(x=>x.href===pathname)?.label??"Gestión"}</span><span className="status">● Sesión segura</span></header>{children}</main></div>;
+  return <div className="app"><aside className="sidebar"><Link href="/" className="brand"><Image className="brand-logo" src="/darkphone-mark.svg" alt="Darkphone Tech" width={44} height={44} priority/><div><strong>Darkphone Tech</strong><small>Gestión integral</small></div></Link><div className="nav-label">OPERACIÓN</div><nav className="nav">{links.map(item=>{const Icon=item.icon;const active=item.href==="/" ? pathname==="/" : pathname===item.href||pathname.startsWith(item.href+"/");return <Link key={item.href} href={item.href} className={active?"active":""}><Icon size={15}/>{item.label}</Link>})}</nav><div className="sidebar-foot"><b>Sesión iniciada</b><br/><span>{email}</span><button type="button" className="button secondary logout-button" onClick={signOut}><LogOut size={14}/> Cerrar sesión</button></div></aside><main className="main"><header className="topbar"><div className="breadcrumbs"><span>Centro de operaciones</span><ChevronRight size={13}/><strong>{links.find(x=>x.href===pathname)?.label??"Gestión"}</strong></div><span className="status"><span className="status-dot"/> Sesión segura</span></header>{children}</main></div>;
 }
