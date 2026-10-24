@@ -99,7 +99,7 @@ create policy "Technicians record service inventory movements"
 create or replace function public.guard_technician_product_update()
 returns trigger language plpgsql
 set search_path = public
-as $
+as $guard$
 begin
   if public.has_role(array['technician']::public.app_role[])
      and not public.has_role(array['owner','admin','sales']::public.app_role[]) then
@@ -121,7 +121,7 @@ begin
   end if;
   return new;
 end;
-$;
+$guard$;
 
 drop trigger if exists guard_technician_product_update on public.products;
 create trigger guard_technician_product_update
