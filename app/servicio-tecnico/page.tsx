@@ -13,8 +13,8 @@ type Payment = {id:string;amount:number;method:string;reference:string|null;crea
 type Evidence = {id:string;service_order_id:string;storage_path:string;file_name:string;mime_type:string;file_size:number;category:"initial"|"diagnosis"|"repair"|"delivery";notes:string|null;created_at:string;url?:string};
 const evidenceCategories:{value:Evidence["category"];label:string}[]=[{value:"initial",label:"Estado inicial"},{value:"diagnosis",label:"Diagnóstico"},{value:"repair",label:"Proceso de reparación"},{value:"delivery",label:"Entrega"}];
 const evidenceBucket="service-order-evidence";
-type Draft = {customer_id:string;device_name:string;serial_number:string;reported_fault:string;diagnosis:string;estimated_cost:string;promised_at:string;approval:boolean};
-const initialDraft:Draft={customer_id:"",device_name:"",serial_number:"",reported_fault:"",diagnosis:"",estimated_cost:"",promised_at:"",approval:false};
+type Draft = {customer_id:string;device_name:string;serial_number:string;access_code:string;reported_fault:string;diagnosis:string;estimated_cost:string;promised_at:string;approval:boolean};
+const initialDraft:Draft={customer_id:"",device_name:"",serial_number:"",access_code:"",reported_fault:"",diagnosis:"",estimated_cost:"",promised_at:"",approval:false};
 const statuses:{value:Status;label:string}[]=[{value:"received",label:"Recibido"},{value:"diagnosing",label:"En diagnóstico"},{value:"awaiting_approval",label:"Esperando aprobación"},{value:"awaiting_parts",label:"Esperando repuesto"},{value:"in_repair",label:"En reparación"},{value:"ready",label:"Listo para entregar"},{value:"delivered",label:"Entregado"},{value:"cancelled",label:"Cancelado"}];
 const paymentMethods=[{value:"cash",label:"Efectivo"},{value:"debit_card",label:"Tarjeta débito"},{value:"credit_card",label:"Tarjeta crédito"},{value:"bank_transfer",label:"Transferencia"},{value:"nequi",label:"Nequi"},{value:"daviplata",label:"Daviplata"},{value:"other",label:"Otro"}];
 const fmt=(n:number)=>new Intl.NumberFormat("es-CO",{style:"currency",currency:"COP",maximumFractionDigits:0}).format(n||0);
@@ -98,7 +98,8 @@ export default function ServiceTechnicalPage(){
    approval_status:draft.approval?"pending":"not_required"
   }).select("id").single();
   setSaving(false);
-  if(error){setError("No se pudo crear la orden: "+error.message);return}
+  if(error){setSaving(false);setError("No se pudo crear la orden: "+error.message);return}
+  if(draft.access_code.trim()&&data?.id){const {data:{user}}=await supabase.auth.getUser();const {error:credentialError}=await supabase.from("device_access_credentials").insert({service_order_id:data.id,access_code:draft.access_code.trim(),created_by:user?.id??null});if(credentialError){setSaving(false);setError("La orden se creó, pero no se pudo guardar la clave: "+credentialError.message);await load();return}}
   setMessage("Orden de servicio creada correctamente.");
   setDraft(initialDraft);setShowForm(false);setParts([]);setPayments([]);await load();
   if(data?.id)setSelected(data.id);
@@ -159,6 +160,7 @@ export default function ServiceTechnicalPage(){
     <div className="field"><label>Cliente</label><select value={draft.customer_id} onChange={e=>setDraft({...draft,customer_id:e.target.value})}><option value="">Sin cliente asociado</option>{customers.map(c=><option key={c.id} value={c.id}>{c.full_name}{c.phone?" · "+c.phone:""}</option>)}</select></div>
     <div className="field"><label>Equipo / marca / modelo *</label><input required maxLength={180} value={draft.device_name} onChange={e=>setDraft({...draft,device_name:e.target.value})} placeholder="Ej. iPhone 13 Pro Max"/></div>
     <div className="field"><label>IMEI o serial</label><input maxLength={120} value={draft.serial_number} onChange={e=>setDraft({...draft,serial_number:e.target.value})} placeholder="Identificador del equipo"/></div>
+    <div className="field"><label>Clave / patrón (opcional)</label><input type="password" autoComplete="off" maxLength={120} value={draft.access_code} onChange={e=>setDraft({...draft,access_code:e.target.value})} placeholder="Solo personal autorizado"/></div>
     <div className="field"><label>Fecha prometida</label><input type="date" value={draft.promised_at} onChange={e=>setDraft({...draft,promised_at:e.target.value})}/></div>
     <div className="field service-full"><label>Falla reportada por el cliente *</label><textarea required rows={2} maxLength={2000} value={draft.reported_fault} onChange={e=>setDraft({...draft,reported_fault:e.target.value})} placeholder="Describe el síntoma o daño reportado"/></div>
     <div className="field service-full"><label>Diagnóstico inicial (opcional)</label><textarea rows={2} maxLength={3000} value={draft.diagnosis} onChange={e=>setDraft({...draft,diagnosis:e.target.value})} placeholder="Pruebas realizadas y falla encontrada"/></div>
