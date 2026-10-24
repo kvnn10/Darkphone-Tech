@@ -3,7 +3,8 @@ import { useCallback,useEffect,useMemo,useState } from "react";
 import { Search,ShoppingCart,Plus,Minus,Trash2,RefreshCw,UserRound,CreditCard,Banknote,CheckCircle2,Clock3,ReceiptText } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 type Product={id:string;name:string;brand:string|null;model:string|null;sku:string|null;category:string|null;cost_price:number;selling_price:number;stock_quantity:number;has_imei:boolean;active:boolean};
-type Customer={id:string;full_name:string;phone:string|null};\ntype Serial={id:string;product_id:string;serial_number:string;status:string};
+type Customer={id:string;full_name:string;phone:string|null};
+type Serial={id:string;product_id:string;serial_number:string;status:string};
 type Sale={id:string;sale_number:number;status:string;subtotal:number;discount:number;total:number;created_at:string;customers?:{full_name:string}|null};
 type CartLine={product:Product;quantity:number;serial_ids:string[]};
 type PayMethod="cash"|"debit_card"|"credit_card"|"bank_transfer"|"nequi"|"daviplata"|"other";
@@ -25,7 +26,8 @@ export default function SalesPage(){
   ]);
   if(p.error)setMessage("No se pudo cargar el inventario: "+p.error.message);else setProducts((p.data??[]) as Product[]);
   if(c.error)setMessage("No se pudieron cargar los clientes: "+c.error.message);else setCustomers((c.data??[]) as Customer[]);
-  if(s.error)setMessage("No se pudo cargar el historial: "+s.error.message);else setSales((s.data??[]) as unknown as Sale[]);\n  if(ser.error)setMessage("No se pudieron cargar IMEI/seriales: "+ser.error.message);else setSerials((ser.data??[]) as Serial[]);
+  if(s.error)setMessage("No se pudo cargar el historial: "+s.error.message);else setSales((s.data??[]) as unknown as Sale[]);
+  if(ser.error)setMessage("No se pudieron cargar IMEI/seriales: "+ser.error.message);else setSerials((ser.data??[]) as Serial[]);
   setLoading(false);
  },[]);
  useEffect(()=>{void load()},[load]);
@@ -42,7 +44,8 @@ export default function SalesPage(){
   if(discountValue>subtotal){setMessage("El descuento no puede superar el subtotal.");return}
   if(paid>total){setMessage("Los pagos superan el total. Ajusta los valores.");return}
   if(total<=0||Math.abs(paid-total)>0.5){setMessage("Para cerrar la venta, los medios de pago deben cubrir exactamente el total. Los pagos a crédito se habilitarán cuando esté listo el módulo de cuentas por cobrar.");return}
-  if(cart.some(l=>l.quantity>l.product.stock_quantity)){setMessage("El inventario cambió. Actualiza los datos antes de continuar.");return}\n  if(cart.some(l=>l.product.has_imei&&(l.serial_ids.length!==l.quantity||new Set(l.serial_ids).size!==l.quantity))){setMessage("Selecciona un IMEI/serial único para cada unidad de los equipos que lo requieren.");return}
+  if(cart.some(l=>l.quantity>l.product.stock_quantity)){setMessage("El inventario cambió. Actualiza los datos antes de continuar.");return}
+  if(cart.some(l=>l.product.has_imei&&(l.serial_ids.length!==l.quantity||new Set(l.serial_ids).size!==l.quantity))){setMessage("Selecciona un IMEI/serial único para cada unidad de los equipos que lo requieren.");return}
   setSaving(true);
   const payloadItems=cart.map(l=>({product_id:l.product.id,quantity:l.quantity,serial_ids:l.serial_ids}));
   const payloadPayments=payments.filter(p=>Number(p.amount)>0).map(p=>({method:p.method,amount:Number(p.amount),reference:p.reference.trim()||null}));
