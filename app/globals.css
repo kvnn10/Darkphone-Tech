@@ -702,3 +702,19 @@ body{min-height:100%;background:var(--bg)}
 .collaborator-service-actions{display:flex;justify-content:flex-end;gap:8px;padding-top:12px;margin-top:12px;border-top:1px solid var(--line)}
 .small-button{padding:7px 9px;font-size:10px}
 @media(max-width:900px){.collaborator-overview-grid{grid-template-columns:1fr}.collaborator-toolbar{align-items:stretch;flex-direction:column}.collaborator-toolbar .service-search{max-width:none}.collaborator-toolbar-actions .button{justify-content:center}.collaborator-service-main{flex-direction:column}.collaborator-service-values{text-align:left;display:flex;flex-wrap:wrap;align-items:center;gap:10px}.collaborator-service-values strong{font-size:14px}}
+
+
+/* Caja e ingresos funcional */
+.cash-stats{margin-bottom:16px}
+.cash-state{font-size:20px!important}
+.cash-open-panel,.cash-active-panel,.cash-close-panel,.cash-movements-panel,.cash-expenses-panel,.cash-history-panel{margin-bottom:15px}
+.cash-open-panel h2,.cash-active-panel h2,.cash-close-panel h2,.cash-movements-panel h2,.cash-expenses-panel h2,.cash-history-panel h2{display:flex;align-items:center;gap:8px;font-size:15px;margin:0 0 5px}
+.cash-open-panel .panel-head p,.cash-active-panel .panel-head p,.cash-close-panel .panel-head p,.cash-movements-panel .panel-head p,.cash-expenses-panel .panel-head p,.cash-history-panel .panel-head p{font-size:11px;color:var(--muted);margin:0}
+.cash-reconciliation{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:18px}
+.cash-reconciliation>div{display:grid;gap:7px;padding:14px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.cash-reconciliation span{font-size:11px;color:var(--muted)}
+.cash-reconciliation strong{font-size:17px}
+.cash-movement-form{margin-top:16px;padding-top:16px;border-top:1px solid var(--line)}
+.cash-page .collaborator-table{min-width:680px}
+.cash-page .collaborator-status{gap:4px}
+@media(max-width:760px){.cash-reconciliation{grid-template-columns:1fr}.cash-page .page-head{align-items:flex-start;gap:12px}.cash-page .page-head .button{white-space:nowrap}}
