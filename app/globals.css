@@ -549,3 +549,96 @@ body{min-height:100%;background:var(--bg)}
 .app .dashboard-page .stock-alert .alert-dot{width:7px;height:7px;border-radius:50%;background:#d5ad68;flex:0 0 auto}
 .app .dashboard-page .stock-alert.critical .alert-dot{background:#d9858c}
 .app .dashboard-page .stock-alert small{display:block;color:#a8a09a;margin-top:3px;font-size:10px}
+
+
+/* Advanced service desk */
+.app .service-page .service-head-actions{display:flex;gap:8px;flex-wrap:wrap}
+.app .service-page .service-stats .stat{min-width:0}
+.app .service-page .service-stats .stat.kpi-warning:after{background:linear-gradient(90deg,#a98243,#d9b978)}
+.app .service-page .service-stats .stat.kpi-warning strong{color:#e5c58d}
+.app .service-page .service-form-panel{border-color:#354657;background:linear-gradient(150deg,#171d25,#11151b)}
+.app .service-page .service-form-panel .panel-head h2{display:flex;align-items:center;gap:8px}
+.app .service-page .service-form-panel .panel-head h2 svg{color:#8bcaff}
+.app .service-page .service-full{grid-column:1/-1}
+.app .service-page .field textarea{width:100%;min-width:0;resize:vertical;box-sizing:border-box;border:1px solid #35404d;border-radius:9px;background:#0c1016;color:#edf3fa;padding:11px 12px;font:inherit;font-size:12px;line-height:1.55;outline:none}
+.app .service-page .field textarea::placeholder{color:#738093}
+.app .service-page .field textarea:focus{border-color:#5da7df;box-shadow:0 0 0 3px #3c8bc022}
+.app .service-page .service-check{display:flex;align-items:flex-start;gap:10px;padding:12px;border:1px solid #35404d;border-radius:10px;background:#111720;color:#dbe6f2;font-size:11px;line-height:1.5}
+.app .service-page .service-check input{margin-top:3px;accent-color:#65b8f8}
+.app .service-page .service-check span{display:grid;gap:3px}
+.app .service-page .service-check small{color:#8f9daf;font-size:10px}
+.app .service-page .service-head-actions .button.secondary{background:#202b38;color:#e6f0fa;border-color:#3b4d60}
+.app .service-page .service-layout{display:grid;grid-template-columns:minmax(320px,.9fr) minmax(0,1.35fr);align-items:start;gap:16px}
+.app .service-page .service-list-panel,.app .service-page .service-detail-panel{min-width:0}
+.app .service-page .service-list-panel .panel-head h2{display:flex;align-items:center;gap:8px}
+.app .service-page .service-list-panel .panel-head h2 svg{color:#8bcaff}
+.app .service-page .service-toolbar{display:flex;gap:8px;margin-bottom:12px}
+.app .service-page .service-search{display:flex;align-items:center;gap:8px;flex:1;min-width:0;padding:0 10px;background:#0d1117;border:1px solid #333d49;border-radius:9px;color:#8293a7}
+.app .service-page .service-search input{width:100%;min-width:0;border:0;outline:none;background:transparent;color:#e8eef6;padding:10px 0;font-size:11px}
+.app .service-page .service-search input::placeholder{color:#748196}
+.app .service-page .service-toolbar>select{max-width:155px;min-width:0;border:1px solid #333d49;border-radius:9px;background:#151a21;color:#dce6f1;padding:8px;font-size:10px}
+.app .service-page .service-order-list{display:grid;gap:6px;max-height:780px;overflow:auto}
+.app .service-page .service-order-row{display:flex;align-items:center;gap:10px;width:100%;padding:11px;text-align:left;background:#11161d;color:#e6edf5;border:1px solid #2a323d;border-radius:11px;cursor:pointer;transition:background .15s,border-color .15s}
+.app .service-page .service-order-row:hover{background:#18222d;border-color:#3a5065}
+.app .service-page .service-order-row.selected{background:#172838;border-color:#4c82aa;box-shadow:inset 2px 0 #69baf6}
+.app .service-page .service-order-icon{display:grid;place-items:center;flex:0 0 36px;width:36px;height:36px;border-radius:10px;background:#1b2e40;color:#8fcfff}
+.app .service-page .service-order-main{display:grid;gap:4px;min-width:0;flex:1}
+.app .service-page .service-order-main b{font-size:11px;line-height:1.45;overflow-wrap:anywhere;color:#e9f2fc}
+.app .service-page .service-order-main small{font-size:10px;color:#8998aa;overflow-wrap:anywhere}
+.app .service-page .service-status{display:inline-flex;align-items:center;justify-content:center;max-width:120px;text-align:center;flex:0 0 auto;border:1px solid #344353;border-radius:30px;padding:5px 7px;font-size:9px;line-height:1.35;background:#1a222b;color:#b8c7d8}
+.app .service-page .status-received{background:#1b2b39;color:#a8d9ff;border-color:#2c4c65}
+.app .service-page .status-diagnosing{background:#1b2932;color:#9bd8d0;border-color:#2c4e4a}
+.app .service-page .status-awaiting_approval,.app .service-page .status-awaiting_parts{background:#272218;color:#e6c98f;border-color:#51432e}
+.app .service-page .status-in_repair{background:#1c2838;color:#a9c9ff;border-color:#354d70}
+.app .service-page .status-ready{background:#172a23;color:#8cddb5;border-color:#285341}
+.app .service-page .status-delivered{background:#20252c;color:#a8b5c4;border-color:#39424e}
+.app .service-page .status-cancelled{background:#2b1b20;color:#e7a3aa;border-color:#59343a}
+.app .service-page .service-detail-empty{display:grid;justify-items:center;text-align:center;gap:10px;padding:52px 22px;color:#8998aa}
+.app .service-page .service-detail-empty svg{color:#8ba0b5}
+.app .service-page .service-detail-empty h2{margin:0;font-size:15px;color:#e4ebf4}
+.app .service-page .service-detail-empty p{max-width:300px;margin:0;font-size:11px;line-height:1.7}
+.app .service-page .service-detail-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:15px}
+.app .service-page .service-detail-head h2{font-size:18px;line-height:1.35;overflow-wrap:anywhere;margin:3px 0 5px;color:#f0f5fa}
+.app .service-page .service-detail-head p{font-size:11px;line-height:1.5;color:#93a1b2;margin:0}
+.app .service-page .service-device-meta{display:grid;gap:8px;padding:12px;border:1px solid #2b3541;background:#10151c;border-radius:10px;margin-bottom:14px}
+.app .service-page .service-device-meta span{display:flex;align-items:center;gap:8px;font-size:10px;color:#a7b4c4;overflow-wrap:anywhere}
+.app .service-page .service-device-meta svg{color:#8bcaff;flex:0 0 auto}
+.app .service-page .service-status-control{display:grid;grid-template-columns:1fr 1.5fr;align-items:center;gap:12px;margin-bottom:14px}
+.app .service-page .service-status-control label{font-size:11px;font-weight:650;color:#b9c6d5}
+.app .service-page .service-status-control select,.app .service-page .service-inline-form select,.app .service-page .service-inline-form input{width:100%;min-width:0;box-sizing:border-box;border:1px solid #35404d;border-radius:8px;background:#0c1117;color:#eaf1f9;padding:10px;font-size:11px}
+.app .service-page .service-approval-note{display:flex;align-items:flex-start;gap:9px;padding:11px;border:1px solid #51432e;background:#201c16;color:#e4c58e;border-radius:10px;font-size:10px;line-height:1.55;margin-bottom:14px}
+.app .service-page .service-approval-note svg{flex:0 0 auto}
+.app .service-page .service-progress-form{display:grid;gap:12px}
+.app .service-page .service-reported-fault{font-size:11px;line-height:1.6;color:#e0e8f1;background:#10151b;border:1px solid #2a323d;padding:11px;border-radius:9px;white-space:pre-wrap;overflow-wrap:anywhere}
+.app .service-page .service-save-progress{justify-self:start}
+.app .service-page .service-finance-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:16px}
+.app .service-page .service-finance-grid>div{display:grid;gap:6px;padding:12px;background:#11161d;border:1px solid #2a323d;border-radius:10px;min-width:0}
+.app .service-page .service-finance-grid small{font-size:10px;color:#91a0b1}
+.app .service-page .service-finance-grid b{font-size:13px;color:#eaf1f8;overflow-wrap:anywhere}
+.app .service-page .service-subsection{border-top:1px solid #2b323d;margin-top:20px;padding-top:17px}
+.app .service-page .service-subsection-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:11px}
+.app .service-page .service-subsection-head h3{display:flex;align-items:center;gap:8px;margin:0;font-size:12px;color:#e9f0f8}
+.app .service-page .service-subsection-head h3 svg{color:#8bcaff}
+.app .service-page .service-subsection-head>span{font-size:10px;color:#8c9bad}
+.app .service-page .service-part-list{display:grid;gap:6px;margin-bottom:12px}
+.app .service-page .service-part-list>div{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px;background:#11161d;border:1px solid #29323d;border-radius:9px}
+.app .service-page .service-part-list>div>span{display:grid;gap:4px;min-width:0}
+.app .service-page .service-part-list b{font-size:11px;color:#e6edf6;overflow-wrap:anywhere}
+.app .service-page .service-part-list small{font-size:10px;color:#8d9bac}
+.app .service-page .service-part-list strong{font-size:11px;color:#dbe6f2;white-space:nowrap}
+.app .service-page .service-inline-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;padding:12px;background:#0f141a;border:1px solid #29323d;border-radius:10px}
+.app .service-page .service-inline-form .button{justify-self:start;grid-column:1/-1}
+.app .service-page .service-footnote{font-size:10px;line-height:1.6;color:#8795a6;margin:9px 0 0}
+.app .service-page .service-profit{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:18px;padding:14px;background:linear-gradient(120deg,#15251f,#111a17);border:1px solid #2c4c3c;border-radius:12px}
+.app .service-page .service-profit>div{display:grid;gap:5px;min-width:0}
+.app .service-page .service-profit small{font-size:10px;color:#9ab9a7}
+.app .service-page .service-profit b{font-size:20px;letter-spacing:-.03em;color:#8cddb5}
+.app .service-page .service-profit span{font-size:10px;line-height:1.5;color:#91a99a}
+.app .service-page .service-profit>svg{color:#73cfa0;flex:0 0 auto}
+.app .service-page .service-error{background:#28191d;border-color:#63333c;color:#f0b4bb}
+.app .service-page .service-success{background:#14271f;border-color:#2d5b43;color:#9be0b7}
+.app .service-page .service-empty{display:grid;justify-items:center;gap:8px;color:#8c9aab}
+.app .service-page .service-empty b{color:#e3eaf2;font-size:12px}
+.app .service-page .service-empty span{font-size:10px}
+@media(max-width:1120px){.app .service-page .service-layout{grid-template-columns:1fr}.app .service-page .service-order-list{max-height:430px}}
+@media(max-width:740px){.app .service-page .service-head-actions{width:100%}.app .service-page .service-layout{grid-template-columns:minmax(0,1fr)}.app .service-page .service-toolbar{flex-direction:column}.app .service-page .service-toolbar>select{max-width:none;width:100%}.app .service-page .service-status{max-width:95px;font-size:8px}.app .service-page .service-status-control{grid-template-columns:1fr}.app .service-page .service-inline-form{grid-template-columns:minmax(0,1fr)}.app .service-page .service-full,.app .service-page .service-inline-form .button{grid-column:1}.app .service-page .service-finance-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.app .service-page .service-order-row{align-items:flex-start}.app .service-page .service-order-icon{width:31px;height:31px;flex-basis:31px}.app .service-page .service-order-main b{font-size:10px}}
