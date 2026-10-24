@@ -22,7 +22,8 @@ export default function SalesPage(){
   const [p,c,s,ser]=await Promise.all([
    supabase.from("products").select("id,name,brand,model,sku,category,cost_price,selling_price,stock_quantity,has_imei,active").eq("active",true).order("name").limit(500),
    supabase.from("customers").select("id,full_name,phone").order("full_name").limit(500),
-   supabase.from("sales").select("id,sale_number,status,subtotal,discount,total,created_at,customers(full_name)").order("created_at",{ascending:false}).limit(30)
+   supabase.from("sales").select("id,sale_number,status,subtotal,discount,total,created_at,customers(full_name)").order("created_at",{ascending:false}).limit(30),
+   supabase.from("product_serials").select("id,product_id,serial_number,status").eq("status","available").order("serial_number").limit(2000)
   ]);
   if(p.error)setMessage("No se pudo cargar el inventario: "+p.error.message);else setProducts((p.data??[]) as Product[]);
   if(c.error)setMessage("No se pudieron cargar los clientes: "+c.error.message);else setCustomers((c.data??[]) as Customer[]);
