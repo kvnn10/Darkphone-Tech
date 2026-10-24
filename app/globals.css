@@ -156,3 +156,61 @@ body{min-height:100%;background:#08090b}
 .login-card-premium .login-password-wrap{padding-right:44px}
 .login-card-premium .login-password-toggle{right:9px}
 @supports(padding:max(0px)){.login-premium{padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}}
+
+/* Compact desktop composition and reference logo sizing */
+@media(min-width:1101px){
+ .login-premium{grid-template-columns:minmax(0,1.08fr) minmax(390px,.92fr);gap:clamp(28px,3vw,48px);padding:clamp(24px,3vw,44px) clamp(28px,4vw,62px) 42px}
+ .login-showcase{min-height:calc(100svh - 100px);max-width:780px}
+ .showcase-center{padding:12px 0}
+ .showcase-emblem{width:clamp(150px,15vw,205px);border-radius:23%}
+ .showcase-wordmark{font-size:clamp(52px,5.2vw,76px);margin-top:12px}
+ .showcase-tagline{margin-top:14px;font-size:9px;letter-spacing:.26em}
+ .showcase-description{margin-top:14px;font-size:11px}
+ .showcase-device{bottom:92px;height:140px;opacity:.27}
+ .showcase-services{padding-top:16px}
+ .showcase-services>div{gap:8px}
+ .showcase-services span{font-size:8px}
+ .login-card-premium{max-width:530px;padding:clamp(26px,2.5vw,38px);border-radius:28px}
+ .login-card-premium .login-brand-centered{margin-bottom:22px}
+ .login-card-premium .login-logo-image{width:64px}
+ .login-card-premium .login-wordmark{font-size:29px}
+ .login-card-premium .login-heading{margin-bottom:22px}
+ .login-card-premium .login-heading h1{font-size:29px}
+ .login-card-premium .login-form{gap:17px}
+ .login-card-premium .login-form .field input{height:50px;font-size:13px}
+ .login-card-premium .login-submit{min-height:52px}
+ .login-card-premium .login-secure{margin-top:19px;padding-top:16px}
+ .login-premium .login-footer{position:fixed;bottom:8px;font-size:7px}
+}
+@media(min-width:1101px) and (max-height:760px){
+ .login-premium{padding-top:18px;padding-bottom:30px}
+ .login-showcase{min-height:calc(100svh - 65px)}
+ .showcase-emblem{width:clamp(125px,13vw,170px)}
+ .showcase-wordmark{font-size:clamp(46px,4.5vw,64px)}
+ .showcase-device{bottom:78px}
+ .showcase-services{padding-top:12px}
+ .login-card-premium{padding:24px 30px}
+ .login-card-premium .login-brand-centered{margin-bottom:16px}
+ .login-card-premium .login-logo-image{width:54px}
+ .login-card-premium .login-wordmark{font-size:26px}
+ .login-card-premium .login-heading{margin-bottom:16px}
+ .login-card-premium .login-heading h1{font-size:26px}
+ .login-card-premium .login-form{gap:13px}
+ .login-card-premium .login-form .field input{height:46px}
+ .login-card-premium .login-submit{min-height:48px}
+ .login-card-premium .login-secure{margin-top:13px;padding-top:12px}
+}
+@media(max-width:760px){
+ .login-showcase{min-height:auto}
+ .showcase-emblem{width:clamp(78px,20vw,108px)}
+ .showcase-wordmark{font-size:clamp(36px,9vw,48px)}
+ .login-card-premium{max-width:460px}
+}
+.login-card-premium input:-webkit-autofill,.login-card-premium input:-webkit-autofill:hover,.login-card-premium input:-webkit-autofill:focus,.login-card-premium input:-webkit-autofill:active{
+ -webkit-text-fill-color:#f5f7fa!important;
+ -webkit-box-shadow:0 0 0 1000px #101216 inset!important;
+ box-shadow:0 0 0 1000px #101216 inset!important;
+ caret-color:#f5f7fa;
+ transition:background-color 99999s ease-out 0s;
+}
+.login-card-premium input:-moz-autofill{box-shadow:0 0 0 1000px #101216 inset!important;color:#f5f7fa!important}
