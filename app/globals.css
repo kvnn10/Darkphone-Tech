@@ -658,3 +658,47 @@ body{min-height:100%;background:var(--bg)}
 .app .service-page .service-evidence-form{display:grid;gap:12px;padding:14px;border:1px solid var(--border,#292929);border-radius:12px;background:var(--panel,#111)}
 .app .service-page .service-evidence-form input[type=file]{width:100%;font-size:11px}
 @media(max-width:640px){.app .service-page .service-evidence-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.app .service-page .service-evidence-form .form-grid{grid-template-columns:minmax(0,1fr)}}
+
+
+/* Pagos a colaboradores */
+.collaborator-stats{margin-bottom:16px}
+.collaborator-tabs{display:flex;gap:7px;flex-wrap:wrap;padding:9px;margin-bottom:15px}
+.collaborator-tabs button{display:inline-flex;align-items:center;gap:7px;border:1px solid transparent;background:transparent;color:var(--muted);padding:9px 12px;border-radius:8px;font-size:12px;cursor:pointer}
+.collaborator-tabs button.active{background:#e8f2fc;border-color:#cfe3f8;color:var(--blue);font-weight:700}
+.collaborator-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}
+.collaborator-toolbar .service-search{flex:1;max-width:560px}
+.collaborator-toolbar-actions{display:flex;gap:8px}
+.collaborator-form-panel h2,.collaborator-overview-grid h2{display:flex;align-items:center;gap:8px;margin:0 0 5px;font-size:15px}
+.collaborator-form-panel .panel-head p,.collaborator-overview-grid .panel-head p{margin:0;color:var(--muted);font-size:11px}
+.collaborator-overview-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+.collaborator-overview-grid .panel{margin:0}
+.collaborator-list-row{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:13px 0;border-bottom:1px solid var(--line)}
+.collaborator-list-row:last-child{border-bottom:0}
+.collaborator-list-row>div{display:grid;gap:5px;min-width:0}
+.collaborator-list-row b{font-size:12px}
+.collaborator-list-row small{font-size:10px;color:var(--muted)}
+.collaborator-list-row>strong{font-size:12px;white-space:nowrap}
+.collaborator-quick-panel ol{padding-left:19px;display:grid;gap:10px;font-size:12px}
+.collaborator-table-wrap{width:100%;overflow-x:auto}
+.collaborator-table{width:100%;border-collapse:collapse;font-size:12px;min-width:650px}
+.collaborator-table th{text-align:left;color:var(--muted);font-size:10px;font-weight:700;padding:11px 9px;border-bottom:1px solid var(--line);white-space:nowrap}
+.collaborator-table td{padding:13px 9px;border-bottom:1px solid var(--line);vertical-align:middle}
+.collaborator-table tr:last-child td{border-bottom:0}
+.collaborator-table td b,.collaborator-table td small{display:block}
+.collaborator-table td small{font-size:10px;color:var(--muted);margin-top:4px}
+.collaborator-status{display:inline-flex;align-items:center;border-radius:20px;padding:5px 8px;font-size:10px;font-weight:700;background:#fff6df;color:#946200}
+.collaborator-status.approved{background:#e8fbf1;color:#08794e}
+.collaborator-status.pending{background:#fff6df;color:#946200}
+.collaborator-status.rejected,.collaborator-status.cancelled,.collaborator-status.muted{background:#f0f3f7;color:#687c93}
+.collaborator-service-list{display:grid;gap:11px}
+.collaborator-service-card{border:1px solid var(--line);border-radius:11px;padding:15px}
+.collaborator-service-main{display:flex;justify-content:space-between;gap:16px}
+.collaborator-service-main h3{font-size:14px;margin:9px 0 5px}
+.collaborator-service-main p{font-size:11px;color:var(--muted);margin:5px 0;line-height:1.5}
+.collaborator-service-main small{font-size:10px;color:var(--muted)}
+.collaborator-service-values{display:grid;align-content:start;gap:5px;text-align:right;white-space:nowrap}
+.collaborator-service-values strong{font-size:15px}
+.collaborator-service-values small{font-size:10px;color:var(--muted)}
+.collaborator-service-actions{display:flex;justify-content:flex-end;gap:8px;padding-top:12px;margin-top:12px;border-top:1px solid var(--line)}
+.small-button{padding:7px 9px;font-size:10px}
+@media(max-width:900px){.collaborator-overview-grid{grid-template-columns:1fr}.collaborator-toolbar{align-items:stretch;flex-direction:column}.collaborator-toolbar .service-search{max-width:none}.collaborator-toolbar-actions .button{justify-content:center}.collaborator-service-main{flex-direction:column}.collaborator-service-values{text-align:left;display:flex;flex-wrap:wrap;align-items:center;gap:10px}.collaborator-service-values strong{font-size:14px}}
