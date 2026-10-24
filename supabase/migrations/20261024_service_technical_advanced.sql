@@ -30,7 +30,7 @@ create or replace function public.consume_service_part(
   p_notes text default null
 ) returns jsonb
 language plpgsql
-security definer
+security invoker
 set search_path = public
 as $$
 declare
@@ -82,4 +82,51 @@ begin
 end;
 $$;
 
+
+-- Technicians may adjust stock only through the guarded service-part workflow.
+create policy "Technicians update stock for service"
+  on public.products for update to authenticated
+  using (public.has_role(array['owner','admin','technician']::public.app_role[]))
+  with check (public.has_role(array['owner','admin','technician']::public.app_role[]));
+
+create policy "Technicians record service inventory movements"
+  on public.inventory_movements for insert to authenticated
+  with check (
+    public.has_role(array['owner','admin','technician']::public.app_role[])
+    and movement_type='service_use'
+  );
+
+create or replace function public.guard_technician_product_update()
+returns trigger language plpgsql
+set search_path = public
+as $
+begin
+  if public.has_role(array['technician']::public.app_role[])
+     and not public.has_role(array['owner','admin','sales']::public.app_role[]) then
+    if new.name is distinct from old.name
+       or new.brand is distinct from old.brand
+       or new.model is distinct from old.model
+       or new.sku is distinct from old.sku
+       or new.category is distinct from old.category
+       or new.cost_price is distinct from old.cost_price
+       or new.selling_price is distinct from old.selling_price
+       or new.min_stock is distinct from old.min_stock
+       or new.has_imei is distinct from old.has_imei
+       or new.active is distinct from old.active
+       or new.notes is distinct from old.notes
+       or new.created_by is distinct from old.created_by
+       or new.created_at is distinct from old.created_at then
+      raise exception 'El rol técnico solo puede actualizar existencias mediante una orden de servicio.';
+    end if;
+  end if;
+  return new;
+end;
+$;
+
+drop trigger if exists guard_technician_product_update on public.products;
+create trigger guard_technician_product_update
+before update on public.products
+for each row execute function public.guard_technician_product_update();
+
+revoke all on function public.consume_service_part(uuid,uuid,integer,text) from public, anon;
 grant execute on function public.consume_service_part(uuid,uuid,integer,text) to authenticated;
