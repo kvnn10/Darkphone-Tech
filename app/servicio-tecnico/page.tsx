@@ -53,11 +53,12 @@ export default function ServiceTechnicalPage(){
  const paid=payments.reduce((s,p)=>s+Number(p.amount),0);
  const currentProduct=products.find(p=>p.id===partProduct);
  async function loadEvidence(orderId:string){
-  if(!supabase)return;
-  const {data,error}=await supabase.from("service_order_evidence").select("id,service_order_id,storage_path,file_name,mime_type,file_size,category,notes,created_at").eq("service_order_id",orderId).order("created_at",{ascending:false});
+  const client=supabase;
+  if(!client)return;
+  const {data,error}=await client.from("service_order_evidence").select("id,service_order_id,storage_path,file_name,mime_type,file_size,category,notes,created_at").eq("service_order_id",orderId).order("created_at",{ascending:false});
   if(error){setError("No se pudieron cargar las evidencias: "+error.message);setEvidence([]);return}
   const rows=(data??[]) as Evidence[];
-  const signed=await Promise.all(rows.map(async row=>{const {data:link}=await supabase.storage.from(evidenceBucket).createSignedUrl(row.storage_path,1800);return {...row,url:link?.signedUrl}}));
+  const signed=await Promise.all(rows.map(async row=>{const {data:link}=await client.storage.from(evidenceBucket).createSignedUrl(row.storage_path,1800);return {...row,url:link?.signedUrl}}));
   setEvidence(signed);
  }
  async function uploadEvidence(e:FormEvent){
