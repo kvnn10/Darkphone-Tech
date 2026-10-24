@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
-import { Wrench, Plus, Search, RefreshCw, Clock3, CheckCircle2, Package, UserRound, CalendarClock, CircleDollarSign, X, Save, ClipboardCheck, Smartphone, ReceiptText } from "lucide-react";
+import { Wrench, Plus, Search, RefreshCw, Clock3, CheckCircle2, Package, CalendarClock, CircleDollarSign, X, Save, ClipboardCheck, Smartphone, ReceiptText } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 type Status = "received"|"diagnosing"|"awaiting_approval"|"awaiting_parts"|"in_repair"|"ready"|"delivered"|"cancelled";
@@ -47,7 +47,6 @@ export default function ServiceTechnicalPage(){
  const ready=orders.filter(o=>o.status==="ready").length;
  const revenue=orders.filter(o=>o.status!=="cancelled").reduce((s,o)=>s+Number(o.final_cost??o.estimated_cost??0),0);
  const paid=payments.reduce((s,p)=>s+Number(p.amount),0);
- const cost=parts.reduce((s,p)=>s+Number(p.unit_cost)*Number(p.quantity),0);
  const currentProduct=products.find(p=>p.id===partProduct);
  async function openOrder(o:Order){
   setSelected(o.id);setDiagnosis(o.diagnosis??"");setWorkNotes(o.work_notes??"");setFinalCost(String(o.final_cost??o.estimated_cost??""));setMessage("");setError("");
