@@ -780,3 +780,188 @@ body{min-height:100%;background:var(--bg)}
     padding: 16px;
   }
 }
+
+
+/* Mobile/PWA usability hardening across all authenticated modules */
+.app,
+.app .main,
+.app .content,
+.app .panel,
+.app .stat,
+.app .grid,
+.app form,
+.app .field {
+  min-width: 0;
+}
+.app .content {
+  width: 100%;
+  overflow-wrap: anywhere;
+}
+.app input,
+.app select,
+.app textarea,
+.app button {
+  max-width: 100%;
+}
+.app input,
+.app select,
+.app textarea {
+  font-size: 16px;
+}
+.app .table-wrap,
+.app .collaborator-table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.app table {
+  max-width: 100%;
+}
+.app .page-head > *,
+.app .panel-head > * {
+  min-width: 0;
+}
+.app .page-head h1,
+.app .page-head p,
+.app .panel-head h2,
+.app .panel-head p,
+.app .stat strong,
+.app .stat small {
+  overflow-wrap: anywhere;
+}
+.app button,
+.app a,
+.app input,
+.app select,
+.app textarea {
+  touch-action: manipulation;
+}
+.app button,
+.app .button {
+  min-height: 40px;
+}
+@media (max-width: 740px) {
+  html, body {
+    width: 100%;
+    overflow-x: hidden;
+  }
+  .app .sidebar {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    padding: 10px 12px 8px;
+    max-width: 100%;
+  }
+  .app .brand {
+    min-height: 0;
+    padding: 0 4px 10px;
+  }
+  .app .nav {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 6px;
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 2px 1px 7px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+  .app .nav a {
+    flex: 0 0 auto;
+    min-height: 40px;
+    white-space: nowrap;
+  }
+  .app .main {
+    width: 100%;
+    margin-left: 0;
+  }
+  .app .topbar {
+    min-width: 0;
+    gap: 8px;
+    padding: 0 12px;
+  }
+  .app .breadcrumbs {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .app .breadcrumbs span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .app .content {
+    padding: 18px 12px calc(28px + env(safe-area-inset-bottom));
+  }
+  .app .page-head {
+    gap: 12px;
+    align-items: stretch;
+  }
+  .app .page-head .button {
+    align-self: flex-start;
+    white-space: normal;
+  }
+  .app .stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .app .stat {
+    padding: 14px 12px;
+  }
+  .app .stat label {
+    line-height: 1.45;
+  }
+  .app .stat strong {
+    font-size: clamp(18px, 5vw, 23px);
+  }
+  .app .panel {
+    padding: 15px 12px;
+  }
+  .app .form-grid,
+  .app .split,
+  .app .collaborator-overview-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .app .form-actions {
+    flex-wrap: wrap;
+  }
+  .app .form-actions > button {
+    flex: 1 1 120px;
+    justify-content: center;
+  }
+  .app .toolbar,
+  .app .collaborator-toolbar,
+  .app .collaborator-toolbar-actions {
+    flex-wrap: wrap;
+  }
+  .app .toolbar > *,
+  .app .collaborator-toolbar-actions > * {
+    min-width: 0;
+  }
+  .app .assistant-question {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .app .assistant-question input,
+  .app .assistant-question .button {
+    width: 100%;
+  }
+  .app .cash-reconciliation {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 390px) {
+  .app .stats {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .app .topbar {
+    font-size: 10px;
+  }
+  .app .content {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  .app .page-head h1 {
+    font-size: 23px;
+  }
+}
