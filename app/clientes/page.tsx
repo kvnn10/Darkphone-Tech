@@ -28,7 +28,21 @@ export default function CustomersPage(){
  const totalSpend=sales.filter(s=>s.status==="completed").reduce((n,s)=>n+Number(s.total||0),0);
  function startNew(){setEditing(null);setForm(blank);setShowForm(true);setMessage("");setSelected(null)}
  function startEdit(c:Customer){setEditing(c.id);setForm({full_name:c.full_name,phone:c.phone??"",email:c.email??"",document_number:c.document_number??"",notes:c.notes??""});setShowForm(true);setMessage("")}
- async function save(e:React.FormEvent){e.preventDefault();if(!supabase)return;setSaving(true);setMessage("");const payload={full_name:form.full_name.trim(),phone:form.phone.trim()||null,email:form.email.trim()||null,document_number:form.document_number.trim()||null,notes:form.notes.trim()||null,updated_at:new Date().toISOString()};const result=editing?await supabase.from("customers").update(payload).eq("id",editing):await supabase.from("customers").insert(payload);setSaving(false);if(result.error){setMessage("No se pudo "+(editing?"actualizar":"registrar")+" el cliente: "+result.error.message);return}setShowForm(false);setEditing(null);setForm(blank);setMessage(editing?"Datos del cliente actualizados.":"Cliente registrado correctamente.");await load()}
+ const normalizePhone=(value:string|null|undefined)=>(value??"").replace(/\\D/g,"");
+ const normalizeDoc=(value:string|null|undefined)=>(value??"").toLocaleLowerCase("es").replace(/[^a-z0-9]/g,"");
+ async function save(e:React.FormEvent){e.preventDefault();if(!supabase)return;setSaving(true);setMessage("");
+  const phone=normalizePhone(form.phone),doc=normalizeDoc(form.document_number),email=form.email.trim().toLocaleLowerCase("es");
+  const duplicate=customers.find(c=>c.id!==editing&&(
+   (doc.length>=5&&normalizeDoc(c.document_number)===doc)||
+   (phone.length>=7&&normalizePhone(c.phone)===phone)||
+   (email.length>=5&&(c.email??"").trim().toLocaleLowerCase("es")===email)
+  ));
+  if(duplicate){setSaving(false);setMessage("Posible cliente duplicado: "+duplicate.full_name+". Coincide el "+(doc.length>=5&&normalizeDoc(duplicate.document_number)===doc?"documento":phone.length>=7&&normalizePhone(duplicate.phone)===phone?"teléfono":"correo")+". Revisa su ficha antes de crear otro registro.");setSelected(duplicate.id);return}
+  const payload={full_name:form.full_name.trim(),phone:form.phone.trim()||null,email:form.email.trim()||null,document_number:form.document_number.trim()||null,notes:form.notes.trim()||null,updated_at:new Date().toISOString()};
+  const result=editing?await supabase.from("customers").update(payload).eq("id",editing):await supabase.from("customers").insert(payload);
+  setSaving(false);if(result.error){setMessage("No se pudo "+(editing?"actualizar":"registrar")+" el cliente: "+result.error.message);return}
+  setShowForm(false);setEditing(null);setForm(blank);setMessage(editing?"Datos del cliente actualizados.":"Cliente registrado correctamente.");await load()
+ }
  return <div className="content customers-page">
   <div className="page-head"><div><div className="eyebrow">RELACIÓN CON CLIENTES</div><h1>Clientes</h1><p>Administra contactos y consulta su historial de ventas y servicio técnico.</p></div><button className="button" onClick={startNew}><Plus size={16}/> Nuevo cliente</button></div>
   {message&&<div className="notice" role="status">{message}</div>}
