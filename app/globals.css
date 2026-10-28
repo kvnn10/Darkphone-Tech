@@ -1193,3 +1193,16 @@ html,body{background:#0b1016;color:#e6edf6}
 .app .sales-receipt-payments>div{display:flex;justify-content:space-between;gap:12px;color:#9eafc2;font-size:11px}
 .app .sales-receipt-notes{color:#9eafc2;font-size:12px;overflow-wrap:anywhere}
 @media(max-width:620px){.app .sales-head-actions{width:100%}.app .sales-success{align-items:flex-start}.app .sales-success-copy{flex-basis:100%}.app .sales-history-view{font-size:10px;padding:6px}.app .sales-receipt-preview .panel-head{align-items:flex-start;gap:10px}}
+
+
+/* Service workflow: explicit actions, safe deletion and plain-language guidance */
+.app .service-page .service-detail-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.app .service-page .button.danger{background:#3a2028;color:#ffc7ce;border:1px solid #77404b;box-shadow:none}
+.app .service-page .button.danger:hover{background:#512630;border-color:#b65767}
+.app .service-page .button.danger:disabled{opacity:.6;cursor:wait}
+.app .service-page .service-quick-tip{display:flex;align-items:flex-start;gap:9px;max-width:420px;margin-top:12px;padding:12px;border:1px solid #2e5068;border-radius:10px;background:#142535;color:#c9d8e7;text-align:left;font-size:11px;line-height:1.6}
+.app .service-page .service-quick-tip svg{flex:0 0 auto;color:#76c5f1;margin-top:1px}
+.app .service-page .service-quick-tip b{color:#f0f6fc}
+.app .service-page .service-order-row{cursor:pointer;text-align:left}
+.app .service-page .service-order-row:focus-visible{outline:2px solid #55b9ed;outline-offset:2px}
+@media(max-width:740px){.app .service-page .service-detail-actions{width:auto}.app .service-page .service-detail-actions .service-delete-button{padding:8px;font-size:10px}.app .service-page .service-detail-head{align-items:flex-start}}

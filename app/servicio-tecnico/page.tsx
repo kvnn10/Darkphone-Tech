@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
-import { Wrench, Plus, Search, RefreshCw, Clock3, CheckCircle2, Package, CalendarClock, CircleDollarSign, X, Save, ClipboardCheck, Smartphone, ReceiptText, Upload, Image as ImageIcon, Video, ExternalLink } from "lucide-react";
+import { Wrench, Plus, Search, RefreshCw, Clock3, CheckCircle2, Package, CalendarClock, CircleDollarSign, X, Save, ClipboardCheck, Smartphone, ReceiptText, Upload, Image as ImageIcon, Video, ExternalLink, Trash2, AlertTriangle, MousePointerClick } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 type Status = "received"|"diagnosing"|"awaiting_approval"|"awaiting_parts"|"in_repair"|"ready"|"delivered"|"cancelled";
@@ -89,6 +89,32 @@ export default function ServiceTechnicalPage(){
   await loadEvidence(o.id);
  }
  function closeDetail(){setSelected("");setParts([]);setPayments([]);setEvidence([]);setEvidenceFiles([]);setAccessCode("");setShowAccessCode(false);setEditingAccessCode(false);setAccessCodeDraft("");setMessage("");setError("");}
+ async function deleteOrder(){
+  if(!supabase||!active||saving)return;
+  const order=active;
+  const typed=window.prompt("Vas a eliminar la orden #"+order.order_number+" ("+order.device_name+").\n\nPara confirmar, escribe el número "+order.order_number+".");
+  if(typed===null)return;
+  if(typed.trim()!==String(order.order_number)){setError("No se eliminó: el número de orden no coincide.");return}
+  setSaving(true);setError("");setMessage("");
+  const [partCheck,paymentCheck,evidenceCheck]=await Promise.all([
+   supabase.from("service_order_parts").select("id",{count:"exact",head:true}).eq("service_order_id",order.id),
+   supabase.from("service_payments").select("id",{count:"exact",head:true}).eq("service_order_id",order.id),
+   supabase.from("service_order_evidence").select("id",{count:"exact",head:true}).eq("service_order_id",order.id)
+  ]);
+  const checkError=partCheck.error??paymentCheck.error??evidenceCheck.error;
+  if(checkError){setSaving(false);setError("No se pudo verificar si la orden tiene movimientos asociados. No se eliminó. "+checkError.message);return}
+  if((partCheck.count??0)>0||(paymentCheck.count??0)>0||(evidenceCheck.count??0)>0){
+   setSaving(false);
+   setError("Esta orden tiene "+((partCheck.count??0)>0?"repuestos descontados del inventario":"")+((partCheck.count??0)>0&&(paymentCheck.count??0)>0?" y ":"") + ((paymentCheck.count??0)>0?"abonos registrados":"") + (((partCheck.count??0)>0||(paymentCheck.count??0)>0)&&(evidenceCheck.count??0)>0?" y ":"") + ((evidenceCheck.count??0)>0?"fotos o videos adjuntos":"")+". Para conservar el historial y la trazabilidad, no se puede eliminar. Si ya no debe continuar, cambia su estado a «Cancelado».");return
+  }
+  const {error:credentialError}=await supabase.from("device_access_credentials").delete().eq("service_order_id",order.id);
+  if(credentialError){setSaving(false);setError("No se pudo preparar la eliminación de la clave del equipo: "+credentialError.message);return}
+  const {error:deleteError}=await supabase.from("service_orders").delete().eq("id",order.id);
+  setSaving(false);
+  if(deleteError){setError("No se pudo eliminar la orden. Verifica tus permisos: "+deleteError.message);return}
+  closeDetail();setMessage("La orden #"+order.order_number+" fue eliminada.");await load();
+ }
+
  async function saveAccessCode(){
   if(!supabase||!active)return;
   setSaving(true);setError("");setMessage("");
@@ -186,12 +212,12 @@ export default function ServiceTechnicalPage(){
    </div><div className="form-actions"><button className="button secondary" type="button" onClick={()=>setShowForm(false)}>Cancelar</button><button className="button" type="submit" disabled={saving}><Save size={14}/>{saving?"Guardando…":"Crear orden"}</button></div></form>
   </section>}
   <div className="service-layout">
-   <section className="panel service-list-panel"><div className="panel-head"><div><h2><Wrench size={16}/> Órdenes de servicio</h2><p>{filtered.length} resultados · historial de reparaciones</p></div></div>
+   <section className="panel service-list-panel"><div className="panel-head"><div><h2><Wrench size={16}/> Órdenes de servicio</h2><p>{filtered.length} resultados · selecciona una fila para abrirla</p></div></div>
     <div className="service-toolbar"><div className="service-search"><Search size={15}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Buscar orden, equipo, IMEI o cliente…"/></div><select value={statusFilter} onChange={e=>setStatusFilter(e.target.value)} aria-label="Filtrar por estado"><option value="all">Todos los estados</option>{statuses.map(s=><option key={s.value} value={s.value}>{s.label}</option>)}</select></div>
     {loading?<div className="empty">Cargando órdenes…</div>:filtered.length===0?<div className="empty service-empty"><Wrench size={22}/><b>No hay órdenes para mostrar</b><span>Registra una nueva orden o cambia los filtros.</span></div>:<div className="service-order-list">{filtered.map(o=><button type="button" key={o.id} className={"service-order-row "+(selected===o.id?"selected":"")} onClick={()=>void openOrder(o)}><span className="service-order-icon"><Smartphone size={17}/></span><span className="service-order-main"><b>#{o.order_number} · {o.device_name}</b><small>{o.customers?.full_name??"Sin cliente"}{o.serial_number?" · "+o.serial_number:""}</small><small>{dateFmt(o.received_at)}</small></span><span className={"service-status status-"+o.status}>{statusLabel(o.status)}</span></button>)}</div>}
    </section>
-   <section className="panel service-detail-panel">{!active?<div className="service-detail-empty"><ClipboardCheck size={30}/><h2>Detalle de la orden</h2><p>Selecciona una orden para editar el diagnóstico, cambiar su estado, gestionar repuestos y registrar abonos.</p></div>:<div className="service-detail">
-    <div className="service-detail-head"><div><span className="eyebrow">ORDEN #{active.order_number}</span><h2>{active.device_name}</h2><p>{active.customers?.full_name??"Sin cliente asociado"}{active.customers?.phone?" · "+active.customers.phone:""}</p></div><button className="icon-button" type="button" onClick={closeDetail} aria-label="Cerrar detalle"><X size={15}/></button></div>
+   <section className="panel service-detail-panel">{!active?<div className="service-detail-empty"><ClipboardCheck size={30}/><h2>¿Qué necesitas hacer?</h2><p>1. Selecciona una orden de la lista. 2. Actualiza el estado y el diagnóstico. 3. Registra repuestos, fotos y abonos según avances.</p><div className="service-quick-tip"><MousePointerClick size={16}/><span><b>Consejo:</b> usa el buscador por cliente, equipo o IMEI y el filtro de estado para encontrarla rápido.</span></div></div>:<div className="service-detail">
+    <div className="service-detail-head"><div><span className="eyebrow">ORDEN #{active.order_number}</span><h2>{active.device_name}</h2><p>{active.customers?.full_name??"Sin cliente asociado"}{active.customers?.phone?" · "+active.customers.phone:""}</p></div><div className="service-detail-actions"><button className="button danger service-delete-button" type="button" onClick={()=>void deleteOrder()} disabled={saving} title="Eliminar solo si no tiene repuestos, abonos ni evidencias"><Trash2 size={14}/>{saving?"Procesando…":"Eliminar"}</button><button className="icon-button" type="button" onClick={closeDetail} aria-label="Cerrar detalle"><X size={15}/></button></div></div>
     <div className="service-device-meta"><span><Smartphone size={14}/>{active.serial_number||"Sin IMEI / serial"}</span><span><CalendarClock size={14}/>Recibido: {dateFmt(active.received_at)}</span><span><Clock3 size={14}/>Prometido: {dateFmt(active.promised_at)}</span></div>
     <div className="service-subsection"><div className="service-subsection-head"><h3>Clave / patrón de desbloqueo</h3><span>{accessCode?"Guardada":"Sin clave registrada"}</span></div>{editingAccessCode?<form className="service-inline-form" onSubmit={e=>{e.preventDefault();void saveAccessCode()}}><div className="field"><label>{accessCode?"Nueva clave / patrón":"Registrar clave / patrón"}</label><input type="password" autoComplete="off" maxLength={120} value={accessCodeDraft} onChange={e=>setAccessCodeDraft(e.target.value)} placeholder="Escribe la clave o patrón"/></div><button type="submit" className="button" disabled={saving}><Save size={13}/>{saving?"Guardando…":"Guardar clave"}</button><button type="button" className="button secondary" onClick={()=>{setEditingAccessCode(false);setAccessCodeDraft(accessCode)}}>Cancelar</button></form>:<div className="service-inline-form">{accessCode&&<><input readOnly type={showAccessCode?"text":"password"} value={accessCode} aria-label="Clave de desbloqueo"/><button type="button" className="button secondary" onClick={()=>setShowAccessCode(v=>!v)}>{showAccessCode?"Ocultar clave":"Mostrar clave"}</button></>}<button type="button" className="button secondary" onClick={()=>{setAccessCodeDraft(accessCode);setEditingAccessCode(true)}}>{accessCode?"Editar clave":"Agregar clave"}</button></div>}<small>Visible únicamente para personal con permisos de acceso a credenciales.</small></div>
     <div className="service-status-control"><label>Estado de la orden</label><select value={active.status} disabled={saving||active.status==="cancelled"} onChange={e=>void changeStatus(e.target.value as Status)}>{statuses.map(s=><option key={s.value} value={s.value}>{s.label}</option>)}</select></div>
