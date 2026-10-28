@@ -967,3 +967,58 @@ body{min-height:100%;background:var(--bg)}
 }
 
 @media(max-width:740px){.app .sidebar{padding-top:calc(10px + env(safe-area-inset-top))}.app .content{padding-top:22px}}
+
+
+/* Inventario Pro: refinamiento oscuro inspirado en Stockly, sin alterar los demás módulos */
+.app .inventory-page{--inventory-surface:#111820;--inventory-surface-raised:#171f29;--inventory-line:#2a3542;--inventory-text:#e7edf5;--inventory-muted:#91a0b3;--inventory-blue:#38bdf8;--inventory-blue-soft:#123149}
+.app .inventory-page .page-head h1{color:#f1f5f9}
+.app .inventory-page .page-head p{color:#9aa8b9}
+.app .inventory-page .eyebrow{color:#55b9f2}
+.app .inventory-page .stat,.app .inventory-page .panel{background:linear-gradient(145deg,#151c25 0%,#10161d 100%);border-color:var(--inventory-line);box-shadow:0 8px 24px #00000020, inset 0 1px #ffffff05}
+.app .inventory-page .stat{padding:21px 22px}
+.app .inventory-page .stat:after{height:2px;background:linear-gradient(90deg,#38bdf8,#2dd4bf);opacity:.9}
+.app .inventory-page .stat label.inventory-stat-label{display:flex;align-items:center;gap:8px;color:#9aa9ba;font-size:11px;font-weight:650}
+.app .inventory-page .stat label.inventory-stat-label svg{color:#4bbaf5;flex-shrink:0}
+.app .inventory-page .stat:nth-child(3) label.inventory-stat-label svg{color:#f5ad57}
+.app .inventory-page .stat:nth-child(4) label.inventory-stat-label svg{color:#34d399}
+.app .inventory-page .stat strong{color:#f3f7fc;font-variant-numeric:tabular-nums}
+.app .inventory-page .stat small{color:#8292a6}
+.app .inventory-page .panel{padding:23px}
+.app .inventory-page .panel-head h2{color:#edf3fa;font-size:15px}
+.app .inventory-page .panel-head p{color:#91a0b3}
+.app .inventory-page .toolbar{display:flex;gap:10px;align-items:center;min-height:46px;padding:5px 13px;border:1px solid #303d4b;border-radius:12px;background:#0e141b;transition:border-color .16s,box-shadow .16s}
+.app .inventory-page .toolbar>svg{color:#66bff2;flex-shrink:0}
+.app .inventory-page .toolbar .search{min-height:38px;padding:9px 2px;color:#edf3fa;background:transparent;border:0;box-shadow:none;font-size:13px}
+.app .inventory-page .toolbar .search::placeholder{color:#718197}
+.app .inventory-page .toolbar:focus-within{border-color:#369ed7;box-shadow:0 0 0 3px #38bdf81b}
+.app .inventory-page .form-grid[style*="margin-top"]{gap:12px}
+.app .inventory-page .field label{color:#aab6c5;font-size:11px;font-weight:650}
+.app .inventory-page .field input,.app .inventory-page .field select{min-height:43px;background:#0e141b;color:#e7edf5;border-color:#303d4b;border-radius:10px}
+.app .inventory-page .field input::placeholder{color:#748398}
+.app .inventory-page .field input:focus,.app .inventory-page .field select:focus{border-color:#38a9e8;box-shadow:0 0 0 3px #38bdf81b}
+.app .inventory-page .button.secondary{color:#dce6f1;background:#1b2632;border-color:#364657}
+.app .inventory-page .button.secondary:hover{color:#fff;background:#233446;border-color:#4b8db6}
+.app .inventory-page .table-wrap{border:1px solid #293440;border-radius:12px;background:#111820}
+.app .inventory-page table{font-variant-numeric:tabular-nums}
+.app .inventory-page th{background:#1a222d;color:#9aa9ba;border-bottom-color:#303a46}
+.app .inventory-page td{color:#d5deea;border-bottom-color:#28323e}
+.app .inventory-page tbody tr{background:transparent;transition:background .14s ease}
+.app .inventory-page tbody tr:hover{background:#192634}
+.app .inventory-page tbody tr:last-child td{border-bottom:0}
+.app .inventory-page tbody td b{color:#edf3fa}
+.app .inventory-page .muted{color:#8797ab}
+.app .inventory-page .sort-heading{color:#a5b3c4}
+.app .inventory-page .sort-heading:hover{color:#55bdf5}
+.app .inventory-page .pill{background:#17354a;color:#82d4ff;border:1px solid #24516d}
+.app .inventory-page .icon-button{background:#151e28;border-color:#344151;color:#a9bacd}
+.app .inventory-page .icon-button:hover{background:#18364a;border-color:#3b91bd;color:#8bd7ff}
+.app .inventory-page .icon-button.delete-button:hover{background:#3b2026;border-color:#9d4653;color:#ff9ca7}
+.app .inventory-page .inventory-stock-value{display:inline-flex;align-items:center;justify-content:center;min-width:25px;color:#e8f1fa;font-weight:750}
+.app .inventory-page .inventory-stock-low{color:#ffbd73}
+.app .inventory-page .inventory-stock-badge{display:inline-flex;align-items:center;gap:4px;margin-left:7px;padding:3px 7px;border:1px solid #754b28;border-radius:999px;background:#3b2b1e;color:#ffc17f;font-size:10px;font-weight:700}
+.app .inventory-page .inventory-min-stock{display:block;margin-top:4px;font-size:10px}
+.app .inventory-page .empty{background:#111820;border-color:#344151;color:#91a0b3}
+.app .inventory-page .notice{background:#142b3b;border-color:#245473;color:#b9e5ff}
+.app .inventory-page .edit-panel{background:#14202b;border-color:#2e617f}
+@media(min-width:1200px){.app .inventory-page .form-grid[style*="margin-top"]{grid-template-columns:repeat(4,minmax(0,1fr))}.app .inventory-page .form-grid[style*="margin-top"] .field:last-child{grid-column:auto;justify-content:flex-end!important;align-items:end!important}.app .inventory-page .form-grid[style*="margin-top"] .field:last-child .button{min-height:43px}}
+@media(max-width:740px){.app .inventory-page .panel{padding:16px 12px}.app .inventory-page .stat{padding:15px 12px}.app .inventory-page .stat label.inventory-stat-label{align-items:flex-start;line-height:1.45}.app .inventory-page .table-wrap{border-radius:9px}.app .inventory-page .inventory-stock-badge{margin-left:4px}}
