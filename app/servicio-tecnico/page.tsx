@@ -92,6 +92,7 @@ export default function ServiceTechnicalPage(){
  async function deleteOrder(){
   if(!supabase||!active||saving)return;
   const order=active;
+  if(order.status==="delivered"){setError("Las órdenes entregadas se conservan como historial y no se pueden eliminar.");return}
   const typed=window.prompt("Vas a eliminar la orden #"+order.order_number+" ("+order.device_name+").\n\nPara confirmar, escribe el número "+order.order_number+".");
   if(typed===null)return;
   if(typed.trim()!==String(order.order_number)){setError("No se eliminó: el número de orden no coincide.");return}
