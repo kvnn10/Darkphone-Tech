@@ -5,7 +5,7 @@ import {Wallet,RefreshCw,Plus,LockKeyhole,ArrowDownLeft,ArrowUpRight,Clock3,Rece
 type Session={id:string;opened_by:string;opened_at:string;opening_amount:number;closed_at:string|null;expected_amount:number|null;counted_amount:number|null;notes:string|null};
 type Movement={id:string;cash_session_id:string;kind:"income"|"expense"|"withdrawal"|"adjustment";payment_channel:"cash"|"bank_transfer";amount:number;category:string;description:string|null;reference:string|null;created_at:string;collaborator_payment_id:string|null};
 type LedgerMovement={id:string;movement_date:string;direction:"income"|"expense"|"opening"|"adjustment";amount:number;payment_channel:"cash"|"bank_transfer";description:string|null;source:string;source_message:string|null;created_at:string};
-type SalePayment={id:string;method:string;amount:number;reference:string|null;paid_at:string;sale:{sale_number:number;status:string;cash_session_id:string|null;customers:{full_name:string|null}|null}|};
+type SalePayment={id:string;method:string;amount:number;reference:string|null;paid_at:string;sale:{sale_number:number;status:string;cash_session_id:string|null;customers:{full_name:string|null}|null}|null};
 const money=(n:number)=>new Intl.NumberFormat("es-CO",{style:"currency",currency:"COP",maximumFractionDigits:0}).format(Number(n)||0);
 const dateTime=(s:string)=>new Date(s).toLocaleString("es-CO",{dateStyle:"medium",timeStyle:"short"});
 const today=()=>{const d=new Date();return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10)};
