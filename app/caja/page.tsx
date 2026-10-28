@@ -23,7 +23,14 @@ export default function CashPage(){
    client.from("expenses").select("id,concept,category,amount,payment_method,expense_date,cash_session_id,collaborator_payment_id,created_at").order("created_at",{ascending:false}).limit(1000)
   ]);
   const errs=[s.error,m.error,e.error].filter(Boolean);if(errs.length)setError("No se pudieron cargar todos los datos de Caja: "+errs.map(x=>x?.message).join(" · "));
-  setSessions((s.data??[]) as Session[]);setMovements((m.data??[]) as Movement[]);setExpenses((e.data??[]) as typeof expenses);setLoading(false)
+  const sessionRows=(s.data??[]) as Session[];const movementRows=(m.data??[]) as Movement[];
+  setSessions(sessionRows);setMovements(movementRows);setExpenses((e.data??[]) as typeof expenses);
+  // Caja es la entrada operativa; sincronizamos idempotentemente su apertura y movimientos al libro financiero.
+  const ledgerRows:any[]=[];
+  for(const session of sessionRows){if(Number(session.opening_amount)>0)ledgerRows.push({movement_date:new Date(session.opened_at).toLocaleDateString("sv-SE",{timeZone:"America/Bogota"}),direction:"opening",amount:Number(session.opening_amount),payment_channel:"cash",description:"Base inicial de caja"+(session.notes?" · "+session.notes:""),pending_delta:0,source:"cash",source_key:"cash-opening:"+session.id,source_message:"Caja "+session.id,created_by:session.opened_by});}
+  for(const movement of movementRows){const session=sessionRows.find(x=>x.id===movement.cash_session_id);ledgerRows.push({movement_date:new Date(movement.created_at).toLocaleDateString("sv-SE",{timeZone:"America/Bogota"}),direction:movement.kind==="income"?"income":"expense",amount:Number(movement.amount),payment_channel:"cash",description:[movement.category,movement.description].filter(Boolean).join(" · ")||null,pending_delta:0,source:"cash",source_key:"cash-movement:"+movement.id,source_message:"Caja "+movement.cash_session_id+(movement.reference?" · Ref. "+movement.reference:""),created_by:session?.opened_by??null});}
+  if(ledgerRows.length){const sync=await client.from("financial_movements").upsert(ledgerRows,{onConflict:"source_key",ignoreDuplicates:true});if(sync.error)setError(v=>v||"Caja se guardó, pero no se pudo sincronizar todo el libro financiero: "+sync.error.message);}
+  setLoading(false)
  },[]);
  useEffect(()=>{void load()},[load]);
  const active=sessions.find(s=>!s.closed_at)??null;
