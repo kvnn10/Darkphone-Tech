@@ -1022,3 +1022,85 @@ body{min-height:100%;background:var(--bg)}
 .app .inventory-page .edit-panel{background:#14202b;border-color:#2e617f}
 @media(min-width:1200px){.app .inventory-page .form-grid[style*="margin-top"]{grid-template-columns:repeat(4,minmax(0,1fr))}.app .inventory-page .form-grid[style*="margin-top"] .field:last-child{grid-column:auto;justify-content:flex-end!important;align-items:end!important}.app .inventory-page .form-grid[style*="margin-top"] .field:last-child .button{min-height:43px}}
 @media(max-width:740px){.app .inventory-page .panel{padding:16px 12px}.app .inventory-page .stat{padding:15px 12px}.app .inventory-page .stat label.inventory-stat-label{align-items:flex-start;line-height:1.45}.app .inventory-page .table-wrap{border-radius:9px}.app .inventory-page .inventory-stock-badge{margin-left:4px}}
+
+
+/* Darkphone Studio — shared visual system for every authenticated module */
+:root{color-scheme:dark;--navy:#101722;--blue:#38aef0;--blue-dark:#1786c4;--line:#2a3543;--ink:#e6edf6;--muted:#91a0b3;--bg:#0b1016;--white:#141b24}
+html,body{background:#0b1016;color:#e6edf6}
+.app{background:radial-gradient(ellipse at 82% -10%,#1a2b3d44 0,transparent 40%),#0b1016;color:#e6edf6}
+.app .sidebar{background:#0e141c;border-color:#25303d;box-shadow:8px 0 32px #00000016}
+.app .brand strong{color:#f1f5f9}.app .brand small,.app .sidebar-foot{color:#91a0b3}
+.app .nav-label{color:#71849a}
+.app .nav a{color:#9aa9bb;transition:background .16s,border-color .16s,color .16s}
+.app .nav a.active,.app .nav a:hover{background:#172b3a;color:#7bd0ff}
+.app .sidebar-foot{background:#111a24;border-color:#293645}
+.app .topbar{background:#0e151d;border-color:#26313e;color:#91a0b3}
+.app .breadcrumbs strong{color:#e4edf7}
+.app .status{background:#112b27;border-color:#225344;color:#72d8b1}
+.app .content{color:#e6edf6}
+.app .page-head h1,.app .panel-head h2{color:#f0f5fb}
+.app .page-head p,.app .panel-head p{color:#91a0b3}
+.app .eyebrow{color:#62c5fa}
+.app .panel,.app .stat{background:linear-gradient(145deg,#151d27 0%,#10161e 100%);border-color:#293543;box-shadow:0 8px 24px #00000020,inset 0 1px #ffffff05}
+.app .panel{border-radius:15px}
+.app .stat{border-radius:15px}
+.app .stat label{color:#9eacbd}
+.app .stat strong{color:#f1f5fa}
+.app .stat small{color:#8798ab}
+.app .button{background:linear-gradient(135deg,#168ed0,#087bb8);box-shadow:0 4px 12px #087bb81a}
+.app .button:hover{background:linear-gradient(135deg,#25a4e9,#1287c4)}
+.app .button.secondary{background:#19232f;color:#dbe7f4;border-color:#344355;box-shadow:none}
+.app .button.secondary:hover{background:#223345;border-color:#477da1}
+.app .field label{color:#a9b7c7}
+.app .field input,.app .field select,.app .field textarea,.app .search,.app input:not([type=checkbox]):not([type=radio]),.app select,.app textarea{background:#0d141c;color:#e6edf6;border-color:#303d4b}
+.app .field input::placeholder,.app textarea::placeholder,.app input::placeholder,.app .search::placeholder{color:#718196}
+.app .field input:focus,.app .field select:focus,.app .field textarea:focus,.app .search:focus,.app input:focus-visible,.app select:focus-visible,.app textarea:focus-visible{border-color:#38aef0;box-shadow:0 0 0 3px #38aef01a}
+.app .table-wrap,.app .collaborator-table-wrap{border-color:#293543;background:#111820;border-radius:12px}
+.app table{color:#d9e3ee}
+.app th{background:#1a232e!important;color:#9eacbd!important;border-bottom-color:#303b48!important}
+.app td{color:#d3deea;border-bottom-color:#28333f!important}
+.app tbody tr{background:transparent;transition:background .14s ease}
+.app tbody tr:hover{background:#1a2734}
+.app .pill{background:#17354a;color:#8bd7ff;border:1px solid #24516d}
+.app .notice{background:#132638;border-color:#244d6b;color:#c1e6ff}
+.app .empty{background:#111820;border-color:#344151;color:#91a0b3}
+.app .list-row{border-bottom-color:#293543;color:#dbe5f0}
+.app .list-row:hover{background:#172431}
+.app .list-row b{color:#edf3fa}
+.app .list-row small{color:#91a0b3}
+.app .hero{background:radial-gradient(ellipse at 90% 0%,#1d638b88,transparent 40%),linear-gradient(125deg,#142537,#101923 72%);border:1px solid #2d5068;box-shadow:0 12px 34px #00000025}
+.app .hero h1{color:#f5f8fc}
+.app .hero p{color:#aabbd0}
+.app .hero .eyebrow{color:#72d1ff}
+.app .hero .button.secondary{background:#ffffff0b;color:#e8f4ff;border-color:#ffffff30}
+.app .form-actions{gap:10px}
+.app .toolbar{gap:10px}
+.app .dashboard-page .panel-head h2{display:flex;align-items:center;gap:8px}
+.app .dashboard-page .panel-head h2 svg{color:#64c8fa}
+.app .dashboard-page .dashboard-inventory-panel{padding:22px}
+.app .dashboard-inventory-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.app .dashboard-inventory-metrics>div{display:flex;flex-direction:column;gap:8px;padding:17px;border:1px solid #2c3948;border-radius:12px;background:linear-gradient(145deg,#17212c,#111820)}
+.app .dashboard-inventory-metrics span{font-size:11px;color:#9cabbc}
+.app .dashboard-inventory-metrics strong{font-size:clamp(18px,2vw,25px);letter-spacing:-.035em;color:#f3f7fc;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.app .dashboard-inventory-metrics small{font-size:10px;line-height:1.5;color:#8293a7}
+.app .dashboard-inventory-total{border-color:#315c77!important;background:radial-gradient(ellipse at 100% 0%,#1b4d6b55,transparent 55%),linear-gradient(145deg,#182b3a,#111820)!important}
+.app .dashboard-category-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-top:13px}
+.app .dashboard-category-card{display:flex;flex-direction:column;gap:7px;padding:14px;border:1px solid #2b3947;border-radius:11px;background:#111820;min-width:0}
+.app .dashboard-category-card>span{display:flex;align-items:center;gap:7px;color:#aab9ca;font-size:11px}
+.app .dashboard-category-card>span svg{color:#65c7fa;flex-shrink:0}
+.app .dashboard-category-card strong{font-size:16px;color:#eaf4fc;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.app .dashboard-category-card small{font-size:10px;color:#8496aa}
+.app .inventory-cost-panel{display:grid;grid-template-columns:minmax(230px,.75fr) minmax(0,1.8fr);gap:20px;padding:22px}
+.app .inventory-cost-main{display:flex;align-items:flex-start;gap:14px;padding:4px 0}
+.app .inventory-cost-icon{display:grid;place-items:center;flex:0 0 58px;height:58px;border:1px solid #3a5a7c;border-radius:15px;background:linear-gradient(145deg,#263b60,#1b2b45);color:#fff;box-shadow:inset 0 1px #ffffff12}
+.app .inventory-cost-eyebrow{font-size:11px;letter-spacing:.25em;color:#b0bfd5;margin:4px 0 10px}
+.app .inventory-cost-main strong{display:block;font-size:clamp(24px,3vw,34px);letter-spacing:-.04em;color:#f6f8fc;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.app .inventory-cost-main p{margin:8px 0 0;color:#a0aec1;font-size:12px}
+.app .inventory-category-breakdown{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.app .inventory-category-chip{display:flex;flex-direction:column;gap:7px;min-width:0;padding:13px 14px;border:1px solid #2e3b4b;border-radius:12px;background:linear-gradient(145deg,#192330,#121922)}
+.app .inventory-category-chip span{font-size:11px;color:#aab8c8}
+.app .inventory-category-chip strong{font-size:16px;color:#eef5fc;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.app .inventory-category-chip small{font-size:10px;color:#8799ad}
+@media(max-width:1000px){.app .inventory-cost-panel{grid-template-columns:1fr}.app .dashboard-inventory-metrics{grid-template-columns:1fr 1fr}.app .dashboard-inventory-metrics>div:first-child{grid-column:1/-1}}
+@media(max-width:740px){.app .dashboard-inventory-panel{padding:16px 12px}.app .dashboard-inventory-panel .panel-head{align-items:flex-start;flex-direction:column}.app .dashboard-inventory-metrics{grid-template-columns:1fr}.app .dashboard-inventory-metrics>div:first-child{grid-column:auto}.app .inventory-cost-panel{padding:16px 12px}.app .inventory-category-breakdown{grid-template-columns:repeat(2,minmax(0,1fr))}.app .inventory-category-chip{padding:11px}.app .inventory-cost-main{gap:11px}.app .inventory-cost-icon{flex-basis:48px;height:48px}.app .split{grid-template-columns:1fr}}
+@media(max-width:420px){.app .inventory-category-breakdown{grid-template-columns:1fr}.app .dashboard-category-grid{grid-template-columns:1fr}}
