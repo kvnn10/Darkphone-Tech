@@ -2,6 +2,7 @@
 import { useCallback,useEffect,useMemo,useState } from "react";
 import { Search,ShoppingCart,Plus,Minus,Trash2,RefreshCw,UserRound,CreditCard,Banknote,CheckCircle2,Clock3,ReceiptText,UserPlus,X,SlidersHorizontal,RotateCcw,PackageCheck,Smartphone } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+const PRODUCT_CATEGORIES=["Accesorios","Audio","Baterías","Cocos","Celulares","Computadores","Pantallas","Repuestos","Tablets","Tapas completas","Tapas lisas","Otros"];
 type Product={id:string;name:string;brand:string|null;model:string|null;sku:string|null;category:string|null;cost_price:number;selling_price:number;stock_quantity:number;has_imei:boolean;active:boolean};
 type Customer={id:string;full_name:string;phone:string|null};
 type Serial={id:string;product_id:string;serial_number:string;status:string};
@@ -37,7 +38,7 @@ export default function SalesPage(){
   setLoading(false);
  },[]);
  useEffect(()=>{void load()},[load]);
- const categories=useMemo(()=>Array.from(new Set(products.map(p=>p.category?.trim()).filter((v):v is string=>Boolean(v)))).sort((a,b)=>a.localeCompare(b,"es",{sensitivity:"base"})),[products]);
+ const categories=useMemo(()=>Array.from(new Set([...PRODUCT_CATEGORIES,...products.map(p=>p.category?.trim()).filter((v):v is string=>Boolean(v))])).sort((a,b)=>a.localeCompare(b,"es",{sensitivity:"base"})),[products]);
  const models=useMemo(()=>Array.from(new Set(products.map(productModel).filter(Boolean))).sort((a,b)=>a.localeCompare(b,"es",{numeric:true,sensitivity:"base"})),[products]);
  const colors=useMemo(()=>Array.from(new Set(products.map(productColor).filter(Boolean))).sort((a,b)=>a.localeCompare(b,"es",{sensitivity:"base"})),[products]);
  const visible=useMemo(()=>{const tokens=normalize(query).split(/\s+/).filter(Boolean);return products.filter(p=>{const text=normalize([p.name,p.brand,p.model,p.sku,p.category,productModel(p),productColor(p)].filter(Boolean).join(" "));return tokens.every(token=>text.includes(token))&&(categoryFilter==="Todas"||p.category===categoryFilter)&&(modelFilter==="Todos"||normalize(productModel(p))===normalize(modelFilter))&&(colorFilter==="Todos"||normalize(productColor(p))===normalize(colorFilter))&&(!availableOnly||p.stock_quantity>0)&&(!imeiOnly||p.has_imei)});},[products,query,categoryFilter,modelFilter,colorFilter,availableOnly,imeiOnly]);
