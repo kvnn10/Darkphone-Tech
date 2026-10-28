@@ -41,9 +41,8 @@ export default function CashPage(){
  // Si no hay turno abierto, mostrar los movimientos del último turno cerrado.
  const displaySession=active??sessions.find(s=>Boolean(s.closed_at))??null;
  const activeMovements=useMemo(()=>displaySession?movements.filter(m=>m.cash_session_id===displaySession.id):[],[movements,displaySession]);
- const totals=useMemo(()=>activeMovements.reduce((a,m)=>{const amount=Number(m.amount)||0;if(m.payment_channel==="bank_transfer"){if(m.kind==="income")a.transferIncome+=amount;else if(m.kind==="expense"||m.kind==="withdrawal")a.transferOutgoing+=amount;}else{if(m.kind==="income")a.cashIncome+=amount;else if(m.kind==="expense"||m.kind==="withdrawal")a.cashOutgoing+=amount;}return a},{cashIncome:0,cashOutgoing:0,transferIncome:0,transferOutgoing:0}),[activeMovements]);
- const expected=(Number(active?.opening_amount)||0)+totals.cashIncome-totals.cashOutgoing;\n const expectedTransfer=(Number(active?.opening_transfer_amount)||0)+transferNet;
- const transferNet=totals.transferIncome-totals.transferOutgoing;
+ const totals=useMemo(()=>activeMovements.reduce((a,m)=>{const amount=Number(m.amount)||0;if(m.kind==="income")a.income+=amount;else if(m.kind==="expense"||m.kind==="withdrawal")a.outgoing+=amount;return a},{income:0,outgoing:0}),[activeMovements]);
+ const expected=(Number(active?.opening_amount)||0)+totals.income-totals.outgoing;
  const recentExpenses=useMemo(()=>displaySession?expenses.filter(e=>e.cash_session_id===displaySession.id):[],[expenses,displaySession]);
  async function openSession(e:FormEvent){e.preventDefault();const client=supabase;if(!client)return;const amount=Number(openingAmount);if(!Number.isFinite(amount)||amount<0){setError("La base inicial debe ser cero o mayor.");return}if(active){setError("Ya hay una caja abierta. Ciérrala antes de abrir otra.");return}
  setSaving(true);setError("");setMessage("");const {data:auth}=await client.auth.getUser();if(!auth.user){setSaving(false);setError("No se pudo identificar al usuario de la sesión.");return}
