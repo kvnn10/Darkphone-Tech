@@ -2,11 +2,11 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
-import { Boxes, ShoppingCart, Wrench, Users, Wallet, HandCoins, Receipt, CreditCard, ShieldCheck, ChartNoAxesCombined, Bot, LayoutDashboard, LogOut, ChevronRight } from "lucide-react";
+import { Boxes, ShoppingCart, Wrench, Users, Wallet, HandCoins, Receipt, CreditCard, ShieldCheck, ChartNoAxesCombined, Bot, LayoutDashboard, LogOut, ChevronRight, Landmark } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { supabase } from "@/lib/supabase";
 
-const links=[{href:"/",label:"Inicio",icon:LayoutDashboard},{href:"/inventario",label:"Inventario",icon:Boxes},{href:"/ventas",label:"Ventas",icon:ShoppingCart},{href:"/servicio-tecnico",label:"Servicio técnico",icon:Wrench},{href:"/clientes",label:"Clientes",icon:Users},{href:"/caja",label:"Caja e ingresos",icon:Wallet},{href:"/pagos-colaboradores",label:"Pagos a colaboradores",icon:HandCoins},{href:"/gastos",label:"Gastos",icon:Receipt},{href:"/cuentas-por-cobrar",label:"Cuentas por cobrar",icon:CreditCard},{href:"/garantias",label:"Garantías",icon:ShieldCheck},{href:"/reportes",label:"Reportes",icon:ChartNoAxesCombined},{href:"/asistente",label:"Asistente del negocio",icon:Bot}];
+const links=[{href:"/",label:"Inicio",icon:LayoutDashboard},{href:"/inventario",label:"Inventario",icon:Boxes},{href:"/ventas",label:"Ventas",icon:ShoppingCart},{href:"/servicio-tecnico",label:"Servicio técnico",icon:Wrench},{href:"/clientes",label:"Clientes",icon:Users},{href:"/caja",label:"Caja e ingresos",icon:Wallet},{href:"/finanzas",label:"Movimientos financieros",icon:Landmark},{href:"/pagos-colaboradores",label:"Pagos a colaboradores",icon:HandCoins},{href:"/gastos",label:"Gastos",icon:Receipt},{href:"/cuentas-por-cobrar",label:"Cuentas por cobrar",icon:CreditCard},{href:"/garantias",label:"Garantías",icon:ShieldCheck},{href:"/reportes",label:"Reportes",icon:ChartNoAxesCombined},{href:"/asistente",label:"Asistente del negocio",icon:Bot}];
 
 export default function AppShell({children}:{children:ReactNode}){
   const pathname=usePathname();
