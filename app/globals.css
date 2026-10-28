@@ -1104,3 +1104,9 @@ html,body{background:#0b1016;color:#e6edf6}
 @media(max-width:1000px){.app .inventory-cost-panel{grid-template-columns:1fr}.app .dashboard-inventory-metrics{grid-template-columns:1fr 1fr}.app .dashboard-inventory-metrics>div:first-child{grid-column:1/-1}}
 @media(max-width:740px){.app .dashboard-inventory-panel{padding:16px 12px}.app .dashboard-inventory-panel .panel-head{align-items:flex-start;flex-direction:column}.app .dashboard-inventory-metrics{grid-template-columns:1fr}.app .dashboard-inventory-metrics>div:first-child{grid-column:auto}.app .inventory-cost-panel{padding:16px 12px}.app .inventory-category-breakdown{grid-template-columns:repeat(2,minmax(0,1fr))}.app .inventory-category-chip{padding:11px}.app .inventory-cost-main{gap:11px}.app .inventory-cost-icon{flex-basis:48px;height:48px}.app .split{grid-template-columns:1fr}}
 @media(max-width:420px){.app .inventory-category-breakdown{grid-template-columns:1fr}.app .dashboard-category-grid{grid-template-columns:1fr}}
+
+
+/* Compact category counts inside the inventory-units KPI */
+.app .inventory-unit-breakdown{display:flex;flex-wrap:wrap;gap:5px 7px;margin-top:9px}
+.app .inventory-unit-breakdown span{display:inline-flex;align-items:center;gap:4px;padding:4px 7px;border:1px solid #2d4051;border-radius:7px;background:#172431;color:#9eafc2;font-size:9px;line-height:1.25;max-width:100%}
+.app .inventory-unit-breakdown b{color:#dcecf8;font-weight:700;font-variant-numeric:tabular-nums}
