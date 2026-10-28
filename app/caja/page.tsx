@@ -24,7 +24,7 @@ export default function CashPage(){
    client.from("cash_movements").select("id,cash_session_id,kind,payment_channel,amount,category,description,reference,created_at,collaborator_payment_id").order("created_at",{ascending:false}).limit(1000),
    client.from("expenses").select("id,concept,category,amount,payment_method,expense_date,cash_session_id,collaborator_payment_id,created_at").order("created_at",{ascending:false}).limit(1000),
    client.from("financial_movements").select("id,movement_date,direction,amount,payment_channel,description,source,source_message,created_at").order("movement_date",{ascending:false}).limit(1000),
-   client.from("sale_payments").select("id,method,amount,reference,paid_at,sales:sale_id(sale_number,status,cash_session_id,customers:customer_id(full_name))").order("paid_at",{ascending:false}).limit(1000)
+   client.from("sale_payments").select("id,method,amount,reference,paid_at,sales:sales(sale_number,status,cash_session_id,customers:customers(full_name))").order("paid_at",{ascending:false}).limit(1000)
   ]);
   const errs=[s.error,m.error,e.error,l.error,sp.error].filter(Boolean);if(errs.length)setError("No se pudieron cargar todos los datos de Caja: "+errs.map(x=>x?.message).join(" · "));
   const sessionRows=(s.data??[]) as Session[];const movementRows=(m.data??[]) as Movement[];
