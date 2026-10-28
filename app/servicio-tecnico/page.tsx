@@ -46,7 +46,7 @@ export default function ServiceTechnicalPage(){
   setLoading(false);
  },[]);
  useEffect(()=>{void load()},[load]);
- useEffect(()=>{if(showReceipt){window.print();setShowReceipt(false)}},[showReceipt]);
+
  const active=orders.find(o=>o.id===selected)??null;
  const workflowStatuses:Status[]=["received","diagnosing","awaiting_approval","awaiting_parts","in_repair","ready","delivered"];
  const nextStep:Partial<Record<Status,{status:Status;label:string;hint:string}>>={
@@ -58,7 +58,7 @@ export default function ServiceTechnicalPage(){
   ready:{status:"delivered",label:"Registrar entrega",hint:"Verifica el saldo y confirma la entrega al cliente."}
  };
  const checklistLabels=[{key:"screen",label:"Pantalla revisada"},{key:"frame",label:"Carcasa y bordes revisados"},{key:"powers_on",label:"Enciende al recibir"},{key:"camera",label:"Cámaras revisadas"},{key:"ports",label:"Puertos y botones revisados"},{key:"water_damage",label:"Humedad revisada"}];
- function printReceipt(){if(!active)return;setShowReceipt(true);}
+ function printReceipt(){if(!active)return;setShowReceipt(true);window.setTimeout(()=>window.print(),250);}
  const filtered=useMemo(()=>orders.filter(o=>(statusFilter==="all"||o.status===statusFilter)&&[String(o.order_number),o.device_name,o.serial_number,o.reported_fault,o.customers?.full_name,o.customers?.phone].some(v=>v?.toLocaleLowerCase("es").includes(query.toLocaleLowerCase("es")))),[orders,statusFilter,query]);
  const openCount=orders.filter(o=>!["delivered","cancelled"].includes(o.status)).length;
  const waiting=orders.filter(o=>["awaiting_approval","awaiting_parts"].includes(o.status)).length;
