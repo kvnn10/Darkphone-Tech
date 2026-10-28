@@ -156,16 +156,23 @@ async function submit(e:React.FormEvent){
   if(cart.some(l=>l.quantity>l.product.stock_quantity)){setMessage("El inventario cambió. Actualiza los datos antes de continuar.");return}
   if(cart.some(l=>l.product.has_imei&&(l.serial_ids.length!==l.quantity||l.serial_ids.some(id=>!id)||new Set(l.serial_ids).size!==l.quantity))){setMessage("Selecciona un IMEI/serial único para cada unidad de los equipos que lo requieren.");return}
   setSaving(true);
-  const payloadItems=cart.map(l=>({product_id:l.product.id,quantity:l.quantity,serial_ids:l.serial_ids}));
-  const payloadPayments=payments.filter(p=>Number(p.amount)>0).map(p=>({method:p.method,amount:Number(p.amount),reference:p.reference.trim()||null}));
-  const {data,error}=await supabase.rpc("create_sale",{p_customer_id:customerId||null,p_discount:discountValue,p_notes:notes.trim()||null,p_items:payloadItems,p_payments:payloadPayments});
-  setSaving(false);
-  if(error){setMessage(error.message.includes("Could not find the function")||error.message.includes("schema cache")?"La pantalla está lista, pero falta instalar la función transaccional create_sale en Supabase. No se guardó ninguna venta.":"No se pudo registrar la venta: "+error.message);return}
-  const result=data as {id:string;sale_number:number;subtotal:number;discount:number;total:number;paid:number;balance:number};
-  const customer=customers.find(c=>c.id===customerId);
-  const receiptData:ReceiptData={sale_number:result.sale_number,created_at:new Date().toISOString(),customer_name:customer?.full_name??"Mostrador",customer_phone:customer?.phone??null,items:cart.map(line=>({name:line.product.name,sku:line.product.sku,quantity:line.quantity,unit_price:line.product.selling_price,line_total:line.product.selling_price*line.quantity,serial_number:line.serial_ids.map(id=>serials.find(item=>item.id===id)?.serial_number).filter(Boolean).join(", ")||null})),payments:payments.filter(p=>Number(p.amount)>0).map(p=>({method:p.method,amount:Number(p.amount),reference:p.reference.trim()||null})),subtotal:Number(result.subtotal),discount:Number(result.discount),total:Number(result.total),notes:notes.trim(),status:"completed"};
-  setReceipt(receiptData);setSuccess({sale_number:result.sale_number,total:Number(result.total),balance:Number(result.balance)});
-  setCart([]);setCustomerId("");setDiscount("0");setNotes("");setPayments([{method:"cash",amount:"",reference:""}]);await load();
+  try {
+   const payloadItems=cart.map(l=>({product_id:l.product.id,quantity:l.quantity,serial_ids:l.serial_ids}));
+   const payloadPayments=payments.filter(p=>Number(p.amount)>0).map(p=>({method:p.method,amount:Number(p.amount),reference:p.reference.trim()||null}));
+   const {data,error}=await supabase.rpc("create_sale",{p_customer_id:customerId||null,p_discount:discountValue,p_notes:notes.trim()||null,p_items:payloadItems,p_payments:payloadPayments});
+   if(error){setMessage(error.message.includes("Could not find the function")||error.message.includes("schema cache")?"Falta instalar la función create_sale en Supabase. No se guardó ninguna venta.":"No se pudo registrar la venta: "+error.message);return}
+   if(!data||typeof data!=="object"||!("sale_number" in data)){setMessage("Supabase no confirmó el registro de la venta. Verifica el historial antes de volver a intentarlo.");return}
+   const result=data as {id:string;sale_number:number;subtotal:number;discount:number;total:number;paid:number;balance:number};
+   const customer=customers.find(c=>c.id===customerId);
+   const receiptData:ReceiptData={sale_number:result.sale_number,created_at:new Date().toISOString(),customer_name:customer?.full_name??"Mostrador",customer_phone:customer?.phone??null,items:cart.map(line=>({name:line.product.name,sku:line.product.sku,quantity:line.quantity,unit_price:line.product.selling_price,line_total:line.product.selling_price*line.quantity,serial_number:line.serial_ids.map(id=>serials.find(item=>item.id===id)?.serial_number).filter(Boolean).join(", ")||null})),payments:payments.filter(p=>Number(p.amount)>0).map(p=>({method:p.method,amount:Number(p.amount),reference:p.reference.trim()||null})),subtotal:Number(result.subtotal),discount:Number(result.discount),total:Number(result.total),notes:notes.trim(),status:"completed"};
+   setReceipt(receiptData);setSuccess({sale_number:result.sale_number,total:Number(result.total),balance:Number(result.balance)});
+   setCart([]);setCustomerId("");setDiscount("0");setNotes("");setPayments([{method:"cash",amount:"",reference:""}]);await load();
+  } catch (err) {
+   const detail=err instanceof Error?err.message:"Error inesperado al comunicarse con Supabase.";
+   setMessage("No se pudo completar la venta: "+detail+". Revisa el historial antes de volver a intentarlo para evitar duplicados.");
+  } finally {
+   setSaving(false);
+  }
  }
  return <div className="content sales-page">
   <div className="page-head"><div><div className="eyebrow">PUNTO DE VENTA</div><h1>Ventas</h1><p>Registra productos, aplica descuentos y recibe pagos con trazabilidad.</p></div><div className="sales-head-actions"><button className="button secondary" type="button" onClick={()=>document.getElementById("sales-history")?.scrollIntoView({behavior:"smooth",block:"start"})}><Eye size={14}/> Ver ventas</button><button className="button secondary" type="button" onClick={()=>void load()}><RefreshCw size={14}/> Actualizar</button></div></div>
