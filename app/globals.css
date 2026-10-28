@@ -1126,3 +1126,13 @@ html,body{background:#0b1016;color:#e6edf6}
 @media(max-width:900px){.app .inventory-sale-panel{grid-template-columns:1fr}.app .inventory-sale-breakdown{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}}
 @media(max-width:740px){.app .inventory-sale-panel{padding:14px 12px}.app .inventory-sale-breakdown{grid-template-columns:repeat(2,minmax(0,1fr))}.app .inventory-sale-chip{padding:8px}}
 @media(max-width:420px){.app .inventory-sale-breakdown{grid-template-columns:1fr}}
+
+
+/* Inventory KPI refinements: avoid duplicate sale valuation and highlight potential margin */
+.app .inventory-page .grid.stats{gap:12px}
+.app .inventory-page .grid.stats>.stat{padding:18px 20px;min-width:0}
+.app .inventory-page .grid.stats>.stat strong{font-size:clamp(21px,2vw,28px);letter-spacing:-.035em;overflow-wrap:anywhere}
+.app .inventory-page .grid.stats>.inventory-margin-stat .inventory-stat-label svg{color:#34d399}
+.app .inventory-page .grid.stats>.inventory-margin-stat strong{color:#a7f3d0}
+.app .inventory-page .grid.stats>.inventory-margin-stat small{line-height:1.45}
+@media(max-width:740px){.app .inventory-page .grid.stats{gap:9px}.app .inventory-page .grid.stats>.stat{padding:14px 12px}}
