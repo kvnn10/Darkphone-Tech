@@ -82,12 +82,53 @@ export default function SalesPage(){
  function printReceipt(data:ReceiptData){
   const printWindow=window.open("","_blank","width=420,height=720");
   if(!printWindow){setMessage("El navegador bloqueó la ventana del ticket. Permite las ventanas emergentes para imprimir.");return}
-  const rows=data.items.map(item=>`<tr><td><b>${escapeHtml(item.name)}</b>${item.sku?`<small>SKU: ${escapeHtml(item.sku)}</small>`:""}${item.serial_number?`<small>IMEI/Serial: ${escapeHtml(item.serial_number)}</small>`:""}<small>${item.quantity} × ${fmt(item.unit_price)}</small></td><td class="num">${fmt(item.line_total)}</td></tr>`).join("");
-  const paymentsHtml=data.payments.map(p=>`<div class="line"><span>${escapeHtml(paymentLabel(p.method))}${p.reference?` · ${escapeHtml(p.reference)}`:""}</span><b>${fmt(p.amount)}</b></div>`).join("");
+  const rows=data.items.map(item=>`<tr><td><b>${escapeHtml(item.name)}</b>${item.sku?`<small>SKU: ${escapeHtml(item.sku)}</small>`:""}${item.serial_number?`<small>IMEI/Serial: ${escapeHtml(item.serial_number)}</small>`:""}<small class="qty">${item.quantity} × ${fmt(item.unit_price)}</small></td><td class="num">${fmt(item.line_total)}</td></tr>`).join("");
+  const paymentsHtml=data.payments.map(p=>`<div class="line"><span>${escapeHtml(paymentLabel(p.method))}${p.reference?`<small class="ref">${escapeHtml(p.reference)}</small>`:""}</span><b>${fmt(p.amount)}</b></div>`).join("");
   printWindow.document.open();
-  printWindow.document.write(`<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ticket venta #${data.sale_number}</title><style>
-  @page{size:80mm auto;margin:4mm}*{box-sizing:border-box}body{font:12px/1.4 Arial,sans-serif;color:#111;margin:0 auto;max-width:72mm}header{text-align:center;padding-bottom:12px;border-bottom:1px dashed #777}h1{font-size:19px;margin:0 0 4px;letter-spacing:.5px}p{margin:3px 0}.muted{color:#555;font-size:10px}.meta{padding:10px 0;border-bottom:1px dashed #777}.meta div,.line{display:flex;justify-content:space-between;gap:10px;margin:4px 0}table{width:100%;border-collapse:collapse;margin:10px 0}td{padding:5px 0;vertical-align:top;border-bottom:1px dotted #ccc}td:first-child{width:70%}td small{display:block;color:#555;font-size:10px}.num{text-align:right;white-space:nowrap}.totals{border-top:1px dashed #777;padding-top:8px}.grand{font-size:16px;border-top:1px solid #111;padding-top:7px;margin-top:7px}.notes{border-top:1px dashed #777;margin-top:10px;padding-top:8px;overflow-wrap:anywhere}footer{text-align:center;border-top:1px dashed #777;margin-top:12px;padding-top:10px;font-size:10px}@media screen{body{padding:12px}}
-  </style></head><body><header><h1>DARKPHONE TECH</h1><p>Comprobante de venta</p><p class="muted">Conserva este ticket para tus registros</p></header><section class="meta"><div><span>Venta</span><b>#${data.sale_number}</b></div><div><span>Fecha</span><span>${escapeHtml(new Date(data.created_at).toLocaleString("es-CO",{dateStyle:"short",timeStyle:"short"}))}</span></div><div><span>Cliente</span><span>${escapeHtml(data.customer_name||"Mostrador")}</span></div>${data.customer_phone?`<div><span>Teléfono</span><span>${escapeHtml(data.customer_phone)}</span></div>`:""}</section><table><tbody>${rows}</tbody></table><section class="totals"><div class="line"><span>Subtotal</span><b>${fmt(data.subtotal)}</b></div><div class="line"><span>Descuento</span><b>− ${fmt(data.discount)}</b></div><div class="line grand"><strong>TOTAL</strong><strong>${fmt(data.total)}</strong></div><p class="muted">Medios de pago</p>${paymentsHtml}</section>${data.notes?`<section class="notes"><b>Notas:</b><p>${escapeHtml(data.notes)}</p></section>`:""}<footer><p>Gracias por tu compra</p><p>DARKPHONE TECH · Gestión integral</p><p class="muted">Comprobante generado por el sistema</p></footer><script>window.addEventListener("load",()=>setTimeout(()=>window.print(),250));window.addEventListener("afterprint",()=>window.close());</script></body></html>`);
+  printWindow.document.write(`<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ticket Darkphone #${data.sale_number}</title><style>
+  @page{size:80mm auto;margin:4mm}
+  *{box-sizing:border-box}
+  body{font:12px/1.45 Arial,Helvetica,sans-serif;color:#151515;margin:0 auto;max-width:72mm;background:#fff}
+  .brand{text-align:center;padding:4px 0 13px}
+  .logo{display:block;width:46px;height:46px;object-fit:contain;border-radius:12px;margin:0 auto 8px}
+  h1{font-size:22px;line-height:1;margin:0 0 6px;letter-spacing:1.8px;font-weight:800}
+  .subtitle{font-size:11px;color:#555;margin:0;letter-spacing:.3px}
+  .rule{border:0;border-top:1px dashed #aaa;margin:0}
+  .meta{padding:10px 0}
+  .meta div,.line{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin:5px 0}
+  .meta span:first-child,.line>span{color:#555}
+  .meta b,.meta span:last-child{text-align:right;overflow-wrap:anywhere}
+  table{width:100%;border-collapse:collapse;margin:0}
+  td{padding:9px 0;vertical-align:top;border-bottom:1px solid #e6e6e6}
+  td:first-child{width:68%;padding-right:8px}
+  td b{display:block;font-size:12px;line-height:1.35;overflow-wrap:anywhere}
+  td small{display:block;color:#666;font-size:10px;line-height:1.45;overflow-wrap:anywhere}
+  td .qty{margin-top:3px;color:#333}
+  .num{text-align:right;white-space:nowrap;font-weight:700;font-size:12px}
+  .totals{padding:9px 0 8px}
+  .line{margin:5px 0}
+  .line>span{min-width:0;overflow-wrap:anywhere}
+  .ref{display:block;font-size:10px;color:#777;margin-top:2px}
+  .grand{border-top:1px solid #222;border-bottom:1px solid #222;padding:10px 0;margin:10px 0 9px;align-items:center}
+  .grand span{font-size:15px;font-weight:800;letter-spacing:.6px;color:#111}
+  .grand strong{font-size:19px;white-space:nowrap}
+  .payments-title{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#666;font-weight:700;margin:10px 0 6px}
+  .notes{border-top:1px dashed #aaa;margin-top:8px;padding-top:9px;overflow-wrap:anywhere}
+  .notes b{font-size:10px;text-transform:uppercase;letter-spacing:.5px}
+  .notes p{margin:4px 0 0}
+  footer{text-align:center;border-top:1px dashed #aaa;margin-top:10px;padding:12px 0 3px}
+  footer .thanks{font-size:12px;font-weight:700;margin:0 0 4px}
+  footer .small{font-size:10px;color:#666;margin:2px 0}
+  @media screen{body{padding:12px}}
+  </style></head><body>
+  <header class="brand"><img class="logo" src="${window.location.origin}/darkphone-mark.svg" alt="Logo Darkphone" onerror="this.style.display='none'"><h1>DARKPHONE</h1><p class="subtitle">COMPROBANTE DE VENTA</p></header>
+  <hr class="rule">
+  <section class="meta"><div><span>N.º de venta</span><b>#${data.sale_number}</b></div><div><span>Fecha</span><span>${escapeHtml(new Date(data.created_at).toLocaleString("es-CO",{dateStyle:"short",timeStyle:"short"}))}</span></div><div><span>Cliente</span><span>${escapeHtml(data.customer_name||"Mostrador")}</span></div>${data.customer_phone?`<div><span>Teléfono</span><span>${escapeHtml(data.customer_phone)}</span></div>`:""}</section>
+  <hr class="rule"><table><tbody>${rows}</tbody></table>
+  <section class="totals"><div class="line"><span>Subtotal</span><b>${fmt(data.subtotal)}</b></div><div class="line"><span>Descuento</span><b>− ${fmt(data.discount)}</b></div><div class="line grand"><span>TOTAL</span><strong>${fmt(data.total)}</strong></div><p class="payments-title">Medios de pago</p>${paymentsHtml}</section>
+  ${data.notes?`<section class="notes"><b>Observaciones</b><p>${escapeHtml(data.notes)}</p></section>`:""}
+  <footer><p class="thanks">¡Gracias por tu compra!</p><p class="small">Conserva este comprobante</p><p class="small">DARKPHONE · ${escapeHtml(String(data.sale_number))}</p></footer>
+  <script>window.addEventListener("load",()=>setTimeout(()=>window.print(),350));window.addEventListener("afterprint",()=>window.close());</script></body></html>`);
   printWindow.document.close();
 }
 async function viewSale(sale:Sale){
