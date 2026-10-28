@@ -85,10 +85,10 @@ export default function SalesPage(){
   const rows=data.items.map(item=>`<tr><td><b>${escapeHtml(item.name)}</b>${item.sku?`<small>SKU: ${escapeHtml(item.sku)}</small>`:""}${item.serial_number?`<small>IMEI/Serial: ${escapeHtml(item.serial_number)}</small>`:""}<small class="qty">${item.quantity} × ${fmt(item.unit_price)}</small></td><td class="num">${fmt(item.line_total)}</td></tr>`).join("");
   const paymentsHtml=data.payments.map(p=>`<div class="line"><span>${escapeHtml(paymentLabel(p.method))}${p.reference?`<small class="ref">${escapeHtml(p.reference)}</small>`:""}</span><b>${fmt(p.amount)}</b></div>`).join("");
   printWindow.document.open();
-  printWindow.document.write(`<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ticket Darkphone #${data.sale_number}</title><style>
-  @page{size:80mm auto;margin:4mm}
+  printWindow.document.write(`<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Comprobante Darkphone</title><style>
+  @page{size:80mm auto;margin:0}
   *{box-sizing:border-box}
-  body{font:12px/1.45 Arial,Helvetica,sans-serif;color:#151515;margin:0 auto;max-width:72mm;background:#fff}
+  body{font:12px/1.45 Arial,Helvetica,sans-serif;color:#151515;margin:0 auto;max-width:72mm;background:#fff;padding:4mm}
   .brand{text-align:center;padding:4px 0 13px}
   .logo{display:block;width:46px;height:46px;object-fit:contain;border-radius:12px;margin:0 auto 8px}
   h1{font-size:22px;line-height:1;margin:0 0 6px;letter-spacing:1.8px;font-weight:800}
@@ -123,11 +123,11 @@ export default function SalesPage(){
   </style></head><body>
   <header class="brand"><img class="logo" src="${window.location.origin}/darkphone-mark.svg" alt="Logo Darkphone" onerror="this.style.display='none'"><h1>DARKPHONE</h1><p class="subtitle">COMPROBANTE DE VENTA</p></header>
   <hr class="rule">
-  <section class="meta"><div><span>N.º de venta</span><b>#${data.sale_number}</b></div><div><span>Fecha</span><span>${escapeHtml(new Date(data.created_at).toLocaleString("es-CO",{dateStyle:"short",timeStyle:"short"}))}</span></div><div><span>Cliente</span><span>${escapeHtml(data.customer_name||"Mostrador")}</span></div>${data.customer_phone?`<div><span>Teléfono</span><span>${escapeHtml(data.customer_phone)}</span></div>`:""}</section>
+  <section class="meta"><div><span>Fecha</span><span>${escapeHtml(new Date(data.created_at).toLocaleString("es-CO",{dateStyle:"short",timeStyle:"short"}))}</span></div><div><span>Cliente</span><span>${escapeHtml(data.customer_name||"Mostrador")}</span></div>${data.customer_phone?`<div><span>Teléfono</span><span>${escapeHtml(data.customer_phone)}</span></div>`:""}</section>
   <hr class="rule"><table><tbody>${rows}</tbody></table>
   <section class="totals"><div class="line"><span>Subtotal</span><b>${fmt(data.subtotal)}</b></div><div class="line"><span>Descuento</span><b>− ${fmt(data.discount)}</b></div><div class="line grand"><span>TOTAL</span><strong>${fmt(data.total)}</strong></div><p class="payments-title">Medios de pago</p>${paymentsHtml}</section>
   ${data.notes?`<section class="notes"><b>Observaciones</b><p>${escapeHtml(data.notes)}</p></section>`:""}
-  <footer><p class="thanks">¡Gracias por tu compra!</p><p class="small">Conserva este comprobante</p><p class="small">DARKPHONE · ${escapeHtml(String(data.sale_number))}</p></footer>
+  <footer><p class="thanks">¡Gracias por tu compra!</p><p class="small">Conserva este comprobante</p><p class="small">DARKPHONE</p></footer>
   <script>window.addEventListener("load",()=>setTimeout(()=>window.print(),350));window.addEventListener("afterprint",()=>window.close());</script></body></html>`);
   printWindow.document.close();
 }
