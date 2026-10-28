@@ -1136,3 +1136,11 @@ html,body{background:#0b1016;color:#e6edf6}
 .app .inventory-page .grid.stats>.inventory-margin-stat strong{color:#a7f3d0}
 .app .inventory-page .grid.stats>.inventory-margin-stat small{line-height:1.45}
 @media(max-width:740px){.app .inventory-page .grid.stats{gap:9px}.app .inventory-page .grid.stats>.stat{padding:14px 12px}}
+
+
+/* Clear and actionable feedback for sale payment validation */
+.app .sales-page .sales-payment-feedback{margin:10px 0;padding:9px 11px;border:1px solid #344355;border-radius:9px;background:#151f2a;color:#aab9ca;font-size:11px;line-height:1.5}
+.app .sales-page .sales-payment-feedback.is-ready{border-color:#285c4a;background:#12271f;color:#8ce0b9}
+.app .sales-page .sales-payment-feedback.is-pending{border-color:#67512c;background:#292216;color:#f0cc87}
+.app .sales-page .sales-payment-feedback.is-error{border-color:#713942;background:#301c21;color:#ffadb5}
+.app .sales-page .sales-submit:disabled{opacity:.55;cursor:not-allowed;box-shadow:none}
