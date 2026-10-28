@@ -1206,3 +1206,12 @@ html,body{background:#0b1016;color:#e6edf6}
 .app .service-page .service-order-row{cursor:pointer;text-align:left}
 .app .service-page .service-order-row:focus-visible{outline:2px solid #55b9ed;outline-offset:2px}
 @media(max-width:740px){.app .service-page .service-detail-actions{width:auto}.app .service-page .service-detail-actions .service-delete-button{padding:8px;font-size:10px}.app .service-page .service-detail-head{align-items:flex-start}}
+
+
+/* Sales page: separate creation and history to reduce visual load */
+.app .sales-page .sales-view-switch{display:flex;gap:8px;padding:6px;margin:0 0 20px;border:1px solid var(--border,#283644);border-radius:14px;background:rgba(15,22,30,.72)}
+.app .sales-page .sales-view-switch button{display:flex;align-items:center;justify-content:center;gap:8px;min-height:42px;flex:1;border:1px solid transparent;border-radius:10px;background:transparent;color:var(--muted,#9aa9b8);font:inherit;font-weight:650;cursor:pointer}
+.app .sales-page .sales-view-switch button.active{background:#17384b;border-color:#2a607d;color:#e7f6ff;box-shadow:inset 0 0 0 1px rgba(80,177,225,.08)}
+.app .sales-page .sales-view-switch button span{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;border-radius:99px;background:#263746;color:#c7d9e8;font-size:11px}
+.app .sales-page .sales-view-switch button:focus-visible{outline:2px solid #70c6f2;outline-offset:2px}
+@media(max-width:520px){.app .sales-page .sales-view-switch{gap:4px}.app .sales-page .sales-view-switch button{font-size:12px;padding:8px 5px}}
