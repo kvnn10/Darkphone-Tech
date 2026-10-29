@@ -1,0 +1,4 @@
+-- Keep cash sales working when the daily register has not yet been opened.
+-- The create_sale function now automatically opens a daily session when a positive cash payment is included,
+-- carrying forward the previous session's counted balance (or expected balance if not counted).
+-- Applied to the connected Supabase project via a source-preserving replacement of the create_sale function.
