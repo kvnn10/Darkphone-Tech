@@ -85,8 +85,6 @@ export default function CashPage(){
  setSaving(true);setError("");setMessage("");const {data:auth}=await client.auth.getUser();
  const {error}=await client.from("cash_sessions").update({closed_by:auth.user?.id??null,closed_at:new Date().toISOString(),expected_amount:expected,counted_amount:amount,notes:[active.notes,closeNotes.trim()].filter(Boolean).join("\n")||null}).eq("id",active.id).is("closed_at",null);
  setSaving(false);if(error){setError("No se pudo cerrar la caja: "+error.message);return}setCounted("");setCloseNotes("");setMessage("Caja cerrada. Diferencia de saldo: "+money(amount-expected));await load()}
- function kindLabel(k:string){return k==="income"?"Ingreso":k==="withdrawal"?"Retiro":k==="adjustment"?"Ajuste":"Egreso"}
- function kindIcon(k:string){return k==="income"?<ArrowDownLeft size={15}/>:<ArrowUpRight size={15}/>}
  return <div className="content cash-page">
  <div className="page-head"><div><div className="eyebrow">CONTROL FINANCIERO</div><h1>Caja e ingresos</h1><p>Control diario acumulativo de saldos y movimientos. El cierre de hoy alimenta la apertura de mañana.</p></div><button className="button secondary" onClick={()=>void load()} disabled={loading}><RefreshCw size={15}/> Actualizar</button></div>
  {error&&<div className="notice service-error" role="alert">{error}</div>}{message&&<div className="notice service-success" role="status">{message}</div>}
