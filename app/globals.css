@@ -1237,3 +1237,42 @@ html,body{background:#0b1016;color:#e6edf6}
  .app .sales-page .sales-receipt-preview .panel-head>.button{width:100%;justify-content:center;min-height:42px}
  .app .sales-page .sales-view-switch{position:sticky;top:4px;z-index:5;background:#101720;border-color:#2a3948;box-shadow:0 5px 18px #0004}
 }
+
+
+/* Daily cash ledger: WhatsApp-like movement feed with a separate summary per date */
+.cash-daily-book{margin-bottom:16px}
+.cash-day-list{display:grid;gap:14px}
+.cash-day-card{border:1px solid var(--border,#2b3948);border-radius:15px;overflow:hidden;background:rgba(12,19,28,.55)}
+.cash-day-card.is-today{border-color:rgba(55,174,225,.65);box-shadow:0 0 0 1px rgba(55,174,225,.12)}
+.cash-day-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:15px 16px;background:rgba(35,51,67,.48);border-bottom:1px solid var(--border,#2b3948)}
+.cash-day-tag{font-size:9px;letter-spacing:1.4px;font-weight:800;color:#69c7f1}
+.cash-day-head h3{font-size:14px;text-transform:capitalize;margin:4px 0}
+.cash-day-head small,.cash-day-total small{display:block;color:var(--muted);font-size:11px}
+.cash-day-total{text-align:right;white-space:nowrap}
+.cash-day-total strong{font-size:16px}
+.cash-day-items{padding:4px 15px}
+.cash-day-row{display:grid;grid-template-columns:26px minmax(0,1fr) auto;align-items:center;gap:9px;padding:11px 0;border-bottom:1px solid rgba(120,145,170,.15)}
+.cash-day-row:last-child{border-bottom:0}
+.cash-day-sign{width:24px;height:24px;display:grid;place-items:center;border-radius:50%;font-size:16px;font-weight:800;background:rgba(90,190,140,.12)}
+.cash-day-sign.negative{background:rgba(225,120,120,.12)}
+.cash-day-description{min-width:0;display:grid;gap:3px}
+.cash-day-description b{font-size:12px;overflow-wrap:anywhere}
+.cash-day-description small{font-size:10px;color:var(--muted)}
+.cash-day-row>strong{font-size:12px;white-space:nowrap}
+.cash-day-footer{display:flex;flex-wrap:wrap;gap:8px 18px;padding:12px 15px;background:rgba(35,51,67,.34);border-top:1px solid var(--border,#2b3948)}
+.cash-day-footer span{display:grid;gap:3px;color:var(--muted);font-size:10px}
+.cash-day-footer b{font-size:12px;color:var(--text,#e5edf5)}
+.cash-day-close{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:11px 15px;background:rgba(65,180,130,.09);border-top:1px solid rgba(65,180,130,.2);font-size:11px;color:#7bd9ae}
+.cash-day-close b{color:var(--text,#e5edf5)}
+.cash-day-row .positive,.cash-day-total .positive{color:#78d6a6}
+.cash-day-row .negative,.cash-day-total .negative{color:#f09b9b}
+@media(max-width:620px){
+ .cash-day-head{align-items:flex-start;padding:12px}
+ .cash-day-head h3{font-size:12px}
+ .cash-day-total strong{font-size:14px}
+ .cash-day-items{padding:3px 11px}
+ .cash-day-row{grid-template-columns:24px minmax(0,1fr) auto;gap:7px;padding:10px 0}
+ .cash-day-description b{font-size:11px}
+ .cash-day-row>strong{font-size:11px}
+ .cash-day-footer{gap:10px 14px;padding:10px 11px}
+}
