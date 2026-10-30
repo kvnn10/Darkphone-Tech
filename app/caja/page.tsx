@@ -48,6 +48,8 @@ export default function CashPage(){
  const openingTotal=(Number(active?.opening_amount)||0)+(Number(active?.opening_transfer_amount)||0);
  const expected=openingTotal+totals.income-totals.outgoing;
  const consolidatedBalance=useMemo(()=>{
+  if(active)return expected;
+  if(displaySession)return Number(displaySession.counted_amount??displaySession.expected_amount??0);
   const signed=(m:LedgerMovement)=>m.direction==="expense"?-Number(m.amount||0):Number(m.amount||0);
   const ledgerTotal=ledgerMovements.reduce((sum,m)=>sum+signed(m),0);
   const matched=new Set<string>();
@@ -59,7 +61,7 @@ export default function CashPage(){
    if(duplicate)matched.add(duplicate.id);else virtualSales+=Number(p.amount)||0;
   }
   return ledgerTotal+virtualSales;
- },[ledgerMovements,salePayments]);
+ },[active,expected,displaySession,ledgerMovements,salePayments]);
  const recentExpenses=useMemo(()=>displaySession?expenses.filter(e=>e.cash_session_id===displaySession.id):[],[expenses,displaySession]);
  const dailyGroups=useMemo<DailyGroup[]>(()=>{
   const map=new Map<string,DailyGroup>();
