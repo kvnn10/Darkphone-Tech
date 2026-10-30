@@ -52,7 +52,7 @@ export default function CashPage(){
   return saleIncome+otherCashIncome;
  },[salePayments,movements,displayDayKey]);
 
- const openingTotal=(Number(active?.opening_amount)||0)+(Number(active?.opening_transfer_amount)||0);
+ const openingTotal=active?(Number(active.opening_amount)||0)+(Number(active.opening_transfer_amount)||0):Number(displaySession?.counted_amount??displaySession?.expected_amount??displaySession?.opening_amount??0);
  const expected=openingTotal+totals.income-totals.outgoing;
  const consolidatedBalance=useMemo(()=>{
   if(active)return expected;
