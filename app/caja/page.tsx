@@ -26,7 +26,7 @@ export default function CashPage(){
    client.from("cash_sessions").select("id,opened_by,opened_at,opening_amount,opening_transfer_amount,closed_at,expected_amount,counted_amount,expected_transfer_amount,counted_transfer_amount,notes").order("opened_at",{ascending:false}).limit(50),
    client.from("cash_movements").select("id,cash_session_id,kind,payment_channel,amount,category,description,reference,created_at,collaborator_payment_id").order("created_at",{ascending:false}).limit(1000),
    client.from("expenses").select("id,concept,category,amount,payment_method,expense_date,cash_session_id,collaborator_payment_id,created_at").order("created_at",{ascending:false}).limit(1000),
-   client.from("financial_movements").select("id,movement_date,direction,amount,payment_channel,description,source,source_message,created_at").order("movement_date",{ascending:false}).limit(1000),
+   client.from("financial_movements").select("id,movement_date,direction,amount,payment_channel,description,source,source_message,created_at").order("movement_date",{ascending:false}).limit(5000),
    client.from("sale_payments").select("id,method,amount,reference,paid_at,sales:sales(sale_number,status,cash_session_id,customers:customers(full_name))").order("paid_at",{ascending:false}).limit(1000)
   ]);
   const errs=[s.error,m.error,e.error,l.error,sp.error].filter(Boolean);if(errs.length)setError("No se pudieron cargar todos los datos de Caja: "+errs.map(x=>x?.message).join(" · "));
@@ -49,12 +49,14 @@ export default function CashPage(){
  const consolidatedBalance=useMemo(()=>{
   const signed=(m:LedgerMovement)=>m.direction==="expense"?-Number(m.amount||0):Number(m.amount||0);
   const ledgerTotal=ledgerMovements.reduce((sum,m)=>sum+signed(m),0);
-  const virtualSales=salePayments.filter(p=>p.sale?.status==="completed").reduce((sum,p)=>{
+  const matched=new Set<string>();
+  let virtualSales=0;
+  for(const p of salePayments.filter(p=>p.sale?.status==="completed")){
    const localDate=new Date(p.paid_at).toLocaleDateString("sv-SE",{timeZone:"America/Bogota"});
    const channel=p.method==="cash"?"cash":"bank_transfer";
-   const alreadyInLedger=ledgerMovements.some(m=>m.movement_date===localDate&&Number(m.amount)===Number(p.amount)&&m.payment_channel===channel&&Math.abs(new Date(m.created_at).getTime()-new Date(p.paid_at).getTime())<5*60*1000);
-   return sum+(alreadyInLedger?0:Number(p.amount)||0);
-  },0);
+   const duplicate=ledgerMovements.find(m=>!matched.has(m.id)&&m.movement_date===localDate&&Number(m.amount)===Number(p.amount)&&m.payment_channel===channel&&m.direction==="income");
+   if(duplicate)matched.add(duplicate.id);else virtualSales+=Number(p.amount)||0;
+  }
   return ledgerTotal+virtualSales;
  },[ledgerMovements,salePayments]);
  const recentExpenses=useMemo(()=>displaySession?expenses.filter(e=>e.cash_session_id===displaySession.id):[],[expenses,displaySession]);
