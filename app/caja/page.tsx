@@ -45,7 +45,8 @@ export default function CashPage(){
  const displaySession=active??sessions.find(s=>Boolean(s.closed_at))??null;
  const activeMovements=useMemo(()=>displaySession?movements.filter(m=>m.cash_session_id===displaySession.id):[],[movements,displaySession]);
  const totals=useMemo(()=>activeMovements.reduce((a,m)=>{const amount=Number(m.amount)||0;if(m.kind==="income")a.income+=amount;else if(m.kind==="expense"||m.kind==="withdrawal")a.outgoing+=amount;return a},{income:0,outgoing:0}),[activeMovements]);
- const openingTotal=(Number(active?.opening_amount)||0)+(Number(active?.opening_transfer_amount)||0);\n const expected=openingTotal+totals.income-totals.outgoing;
+ const openingTotal=(Number(active?.opening_amount)||0)+(Number(active?.opening_transfer_amount)||0);
+ const expected=openingTotal+totals.income-totals.outgoing;
  const consolidatedBalance=useMemo(()=>{
   const signed=(m:LedgerMovement)=>m.direction==="expense"?-Number(m.amount||0):Number(m.amount||0);
   const ledgerTotal=ledgerMovements.reduce((sum,m)=>sum+signed(m),0);
