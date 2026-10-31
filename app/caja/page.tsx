@@ -98,8 +98,16 @@ export default function CashPage(){
  const recentExpenses=useMemo(()=>displaySession?expenses.filter(e=>e.cash_session_id===displaySession.id):[],[expenses,displaySession]);
  const dailyGroups=useMemo<DailyGroup[]>(()=>{
   const map=new Map<string,DailyGroup>();
+  const matchedSales=new Set<string>();
   for(const m of ledgerMovements){
+   // Una venta ya tiene su registro canonico en sale_payments; omite su espejo de Caja.
+   if(m.source==="cash"&&String(m.source_message??"").includes("Ref. sale:"))continue;
    const date=m.movement_date||new Date(m.created_at).toLocaleDateString("sv-SE",{timeZone:"America/Bogota"});
+   // Los importes importados desde WhatsApp que ya existen como pago de venta no se suman otra vez.
+   if(m.source==="whatsapp_october_2026"&&m.direction==="income"){
+    const match=salePayments.find(p=>!matchedSales.has(p.id)&&p.sale?.status==="completed"&&new Date(p.paid_at).toLocaleDateString("sv-SE",{timeZone:"America/Bogota"})===date&&Number(p.amount)===Number(m.amount)&&(p.method==="cash"?"cash":"bank_transfer")===m.payment_channel);
+    if(match){matchedSales.add(match.id);continue;}
+   }
    if(!map.has(date))map.set(date,{date,items:[],income:0,outgoing:0,net:0});
    const day=map.get(date)!;day.items.push(m);const amount=Number(m.amount)||0;
    if(m.direction==="income")day.income+=amount;else if(m.direction==="expense")day.outgoing+=amount;
@@ -107,7 +115,7 @@ export default function CashPage(){
   }
   if(!map.has(today()))map.set(today(),{date:today(),items:[],income:0,outgoing:0,net:0});
   return [...map.values()].sort((a,b)=>b.date.localeCompare(a.date)).map(day=>({...day,items:day.items.sort((a,b)=>(a.created_at||a.movement_date).localeCompare(b.created_at||b.movement_date))}));
- },[ledgerMovements]);
+ },[ledgerMovements,salePayments]);
  const formatDay=(date:string)=>new Date(date+"T12:00:00").toLocaleDateString("es-CO",{weekday:"long",day:"2-digit",month:"long",year:"numeric"});
  const filteredDailyGroups=useMemo(()=>{
   const now=today();const start=new Date(now+"T12:00:00");let min="",max=now;
