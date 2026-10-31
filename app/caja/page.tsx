@@ -31,11 +31,13 @@ export default function CashPage(){
   ]);
   const errs=[s.error,m.error,e.error,l.error,sp.error].filter(Boolean);if(errs.length)setError("No se pudieron cargar todos los datos de Caja: "+errs.map(x=>x?.message).join(" · "));
   const sessionRows=(s.data??[]) as Session[];const movementRows=(m.data??[]) as Movement[];
-  const paymentRows=((sp.data??[]) as any[]).map(p=>({id:p.id,method:p.method,amount:Number(p.amount),reference:p.reference,paid_at:p.paid_at,sale:p.sales?{sale_number:p.sales.sale_number,status:p.sales.status,cash_session_id:p.sales.cash_session_id,customers:Array.isArray(p.sales.customers)?p.sales.customers[0]??null:p.sales.customers}:null})).filter(p=>p.sale);\n  setSessions(sessionRows);const latestClosed=sessionRows.find(x=>Boolean(x.closed_at));if(!sessionRows.some(x=>!x.closed_at)&&latestClosed){setOpeningAmount(v=>v==="0"?String(Number(latestClosed.counted_amount??latestClosed.expected_amount??0)):v);setOpeningTransferAmount(v=>v==="0"?String(Number(latestClosed.counted_transfer_amount??latestClosed.expected_transfer_amount??0)):v)}setMovements(movementRows);setExpenses((e.data??[]) as typeof expenses);setLedgerMovements((l.data??[]) as LedgerMovement[]);setSalePayments(paymentRows);
+  const paymentRows=((sp.data??[]) as any[]).map(p=>({id:p.id,method:p.method,amount:Number(p.amount),reference:p.reference,paid_at:p.paid_at,sale:p.sales?{sale_number:p.sales.sale_number,status:p.sales.status,cash_session_id:p.sales.cash_session_id,customers:Array.isArray(p.sales.customers)?p.sales.customers[0]??null:p.sales.customers}:null})).filter(p=>p.sale);
+  setSessions(sessionRows);const latestClosed=sessionRows.find(x=>Boolean(x.closed_at));if(!sessionRows.some(x=>!x.closed_at)&&latestClosed){setOpeningAmount(v=>v==="0"?String(Number(latestClosed.counted_amount??latestClosed.expected_amount??0)):v);setOpeningTransferAmount(v=>v==="0"?String(Number(latestClosed.counted_transfer_amount??latestClosed.expected_transfer_amount??0)):v)}setMovements(movementRows);setExpenses((e.data??[]) as typeof expenses);setLedgerMovements((l.data??[]) as LedgerMovement[]);setSalePayments(paymentRows);
   // Caja es la entrada operativa; sincronizamos idempotentemente su apertura y movimientos al libro financiero.
   const ledgerRows:any[]=[];
   for(const session of sessionRows){const date=new Date(session.opened_at).toLocaleDateString("sv-SE",{timeZone:"America/Bogota"});if(Number(session.opening_amount)>0)ledgerRows.push({movement_date:date,direction:"opening",amount:Number(session.opening_amount),payment_channel:"cash",description:"Base inicial de caja · Efectivo"+(session.notes?" · "+session.notes:""),pending_delta:0,source:"cash",source_key:"cash-opening:"+session.id,source_message:"Caja "+session.id,created_by:session.opened_by});if(Number(session.opening_transfer_amount)>0)ledgerRows.push({movement_date:date,direction:"opening",amount:Number(session.opening_transfer_amount),payment_channel:"bank_transfer",description:"Base inicial de caja · Bancos / transferencias",pending_delta:0,source:"cash",source_key:"cash-opening-bank:"+session.id,source_message:"Caja "+session.id,created_by:session.opened_by});}
-  for(const payment of paymentRows){if(payment.sale?.status!=="completed")continue;ledgerRows.push({movement_date:new Date(payment.paid_at).toLocaleDateString("sv-SE",{timeZone:"America/Bogota"}),direction:"income",amount:Number(payment.amount),payment_channel:payment.method==="cash"?"cash":"bank_transfer",description:"Venta #"+payment.sale.sale_number+(payment.sale.customers?.full_name?" · "+payment.sale.customers.full_name:""),pending_delta:0,source:"sales",source_key:"sale-payment:"+payment.id,source_message:payment.reference||"Pago de venta",created_by:null});}\n  for(const movement of movementRows){const session=sessionRows.find(x=>x.id===movement.cash_session_id);ledgerRows.push({movement_date:new Date(movement.created_at).toLocaleDateString("sv-SE",{timeZone:"America/Bogota"}),direction:movement.kind==="income"?"income":"expense",amount:Number(movement.amount),payment_channel:movement.payment_channel??"cash",description:[movement.category,movement.description].filter(Boolean).join(" · ")||null,pending_delta:0,source:"cash",source_key:"cash-movement:"+movement.id,source_message:"Caja "+movement.cash_session_id+(movement.reference?" · Ref. "+movement.reference:""),created_by:session?.opened_by??null});}
+  for(const payment of paymentRows){if(payment.sale?.status!=="completed")continue;ledgerRows.push({movement_date:new Date(payment.paid_at).toLocaleDateString("sv-SE",{timeZone:"America/Bogota"}),direction:"income",amount:Number(payment.amount),payment_channel:payment.method==="cash"?"cash":"bank_transfer",description:"Venta #"+payment.sale.sale_number+(payment.sale.customers?.full_name?" · "+payment.sale.customers.full_name:""),pending_delta:0,source:"sales",source_key:"sale-payment:"+payment.id,source_message:payment.reference||"Pago de venta",created_by:null});}
+  for(const movement of movementRows){const session=sessionRows.find(x=>x.id===movement.cash_session_id);ledgerRows.push({movement_date:new Date(movement.created_at).toLocaleDateString("sv-SE",{timeZone:"America/Bogota"}),direction:movement.kind==="income"?"income":"expense",amount:Number(movement.amount),payment_channel:movement.payment_channel??"cash",description:[movement.category,movement.description].filter(Boolean).join(" · ")||null,pending_delta:0,source:"cash",source_key:"cash-movement:"+movement.id,source_message:"Caja "+movement.cash_session_id+(movement.reference?" · Ref. "+movement.reference:""),created_by:session?.opened_by??null});}
   if(ledgerRows.length){const sync=await client.from("financial_movements").upsert(ledgerRows,{onConflict:"source_key",ignoreDuplicates:true});if(sync.error)setError(v=>v||"Caja se guardó, pero no se pudo sincronizar todo el libro financiero: "+sync.error.message);}
   setLoading(false)
  },[]);
@@ -49,19 +51,20 @@ export default function CashPage(){
  const dailyIncome=useMemo(()=>{
   const saleIncome=salePayments.filter(p=>p.sale?.status==="completed"&&new Date(p.paid_at).toLocaleDateString("sv-SE",{timeZone:"America/Bogota"})===displayDayKey).reduce((sum,p)=>sum+(Number(p.amount)||0),0);
   const otherCashIncome=movements.filter(m=>m.kind==="income"&&!String(m.reference??"").startsWith("sale:")&&new Date(m.created_at).toLocaleDateString("sv-SE",{timeZone:"America/Bogota"})===displayDayKey).reduce((sum,m)=>sum+(Number(m.amount)||0),0);
-  return saleIncome+otherCashIncome;
- },[salePayments,movements,displayDayKey]);
+  const whatsappIncome=ledgerMovements.filter(m=>m.source==="whatsapp_october_2026"&&m.direction==="income"&&m.movement_date===displayDayKey).reduce((sum,m)=>sum+(Number(m.amount)||0),0);
+  return saleIncome+otherCashIncome+whatsappIncome;
+ },[salePayments,movements,ledgerMovements,displayDayKey]);
 
  const openingCash=Number(active?.opening_amount??displaySession?.counted_amount??displaySession?.expected_amount??displaySession?.opening_amount??0)||0;
  const openingBank=Number(active?.opening_transfer_amount??displaySession?.counted_transfer_amount??displaySession?.expected_transfer_amount??0)||0;
  const openingTotal=openingCash+openingBank;
  const channelTotals=useMemo(()=>activeMovements.reduce((a,m)=>{const amount=Number(m.amount)||0;const channel=m.payment_channel??"cash";if(m.kind==="income")a[channel==="bank_transfer"?"bankIncome":"cashIncome"]+=amount;else if(m.kind==="expense"||m.kind==="withdrawal")a[channel==="bank_transfer"?"bankOutgoing":"cashOutgoing"]+=amount;return a},{cashIncome:0,bankIncome:0,cashOutgoing:0,bankOutgoing:0}),[activeMovements]);
- const expectedCash=openingCash+channelTotals.cashIncome-channelTotals.cashOutgoing;
- const expectedBank=openingBank+channelTotals.bankIncome-channelTotals.bankOutgoing;
+ const saleChannelTotals=salePayments.filter(p=>p.sale?.status==="completed"&&new Date(p.paid_at).toLocaleDateString("sv-SE",{timeZone:"America/Bogota"})===displayDayKey).reduce((a,p)=>{a[p.method==="cash"?"cashIncome":"bankIncome"]+=Number(p.amount)||0;return a},{cashIncome:0,bankIncome:0});
+ const whatsappChannelTotals=ledgerMovements.filter(m=>m.source==="whatsapp_october_2026"&&m.direction==="income"&&m.movement_date===displayDayKey).reduce((a,m)=>{a[m.payment_channel==="cash"?"cashIncome":"bankIncome"]+=Number(m.amount)||0;return a},{cashIncome:0,bankIncome:0});
+ const expectedCash=openingCash+channelTotals.cashIncome+saleChannelTotals.cashIncome+whatsappChannelTotals.cashIncome-channelTotals.cashOutgoing;
+ const expectedBank=openingBank+channelTotals.bankIncome+saleChannelTotals.bankIncome+whatsappChannelTotals.bankIncome-channelTotals.bankOutgoing;
  const expected=expectedCash+expectedBank;
  const consolidatedBalance=useMemo(()=>{
-  if(active)return expected;
-  if(displaySession)return Number(displaySession.counted_amount??displaySession.expected_amount??0);
   const signed=(m:LedgerMovement)=>m.direction==="expense"?-Number(m.amount||0):Number(m.amount||0);
   const ledgerTotal=ledgerMovements.reduce((sum,m)=>sum+signed(m),0);
   const matched=new Set<string>();
@@ -81,8 +84,8 @@ export default function CashPage(){
    const date=m.movement_date||new Date(m.created_at).toLocaleDateString("sv-SE",{timeZone:"America/Bogota"});
    if(!map.has(date))map.set(date,{date,items:[],income:0,outgoing:0,net:0});
    const day=map.get(date)!;day.items.push(m);const amount=Number(m.amount)||0;
-   if(m.direction==="income"||m.direction==="opening"||m.direction==="adjustment")day.income+=amount;else day.outgoing+=amount;
-   day.net+=m.direction==="income"||m.direction==="opening"||m.direction==="adjustment"?amount:-amount;
+   if(m.direction==="income")day.income+=amount;else if(m.direction==="expense")day.outgoing+=amount;
+   if(m.direction==="income"||m.direction==="adjustment")day.net+=amount;else if(m.direction==="expense")day.net-=amount;
   }
   if(!map.has(today()))map.set(today(),{date:today(),items:[],income:0,outgoing:0,net:0});
   return [...map.values()].sort((a,b)=>b.date.localeCompare(a.date)).map(day=>({...day,items:day.items.sort((a,b)=>(a.created_at||a.movement_date).localeCompare(b.created_at||b.movement_date))}));
