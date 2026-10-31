@@ -46,7 +46,15 @@ export default function CashPage(){
  // Si no hay turno abierto, mostrar los movimientos del último turno cerrado.
  const displaySession=active??sessions.find(s=>Boolean(s.closed_at))??null;
  const activeMovements=useMemo(()=>displaySession?movements.filter(m=>m.cash_session_id===displaySession.id):[],[movements,displaySession]);
- const totals=useMemo(()=>activeMovements.reduce((a,m)=>{const amount=Number(m.amount)||0;if(m.kind==="income")a.income+=amount;else if(m.kind==="expense"||m.kind==="withdrawal")a.outgoing+=amount;return a},{income:0,outgoing:0}),[activeMovements]);
+ const turnDate=displaySession?new Date(displaySession.opened_at).toLocaleDateString("sv-SE",{timeZone:"America/Bogota"}):today();
+ const totals=useMemo(()=>{
+  const base=activeMovements.reduce((a,m)=>{const amount=Number(m.amount)||0;if(m.kind==="income")a.income+=amount;else if(m.kind==="expense"||m.kind==="withdrawal")a.outgoing+=amount;return a},{income:0,outgoing:0});
+  const sales=salePayments.filter(p=>p.sale?.status==="completed"&&new Date(p.paid_at).toLocaleDateString("sv-SE",{timeZone:"America/Bogota"})===turnDate).reduce((sum,p)=>sum+(Number(p.amount)||0),0);
+  const imported=ledgerMovements.filter(m=>m.source==="whatsapp_october_2026"&&m.movement_date===turnDate);
+  for(const m of imported){const amount=Number(m.amount)||0;if(m.direction==="income")base.income+=amount;else if(m.direction==="expense")base.outgoing+=amount;}
+  base.income+=sales;
+  return base;
+ },[activeMovements,salePayments,ledgerMovements,turnDate]);
  const displayDayKey=today();
  const dailyIncome=useMemo(()=>{
   const saleIncome=salePayments.filter(p=>p.sale?.status==="completed"&&new Date(p.paid_at).toLocaleDateString("sv-SE",{timeZone:"America/Bogota"})===displayDayKey).reduce((sum,p)=>sum+(Number(p.amount)||0),0);
