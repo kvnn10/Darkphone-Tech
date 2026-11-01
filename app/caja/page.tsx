@@ -58,13 +58,13 @@ export default function CashPage(){
   return base;
  },[activeMovements,salePayments,ledgerMovements,turnDate]);
  const displayDayKey=today();
- const saleChannelTotals=salePayments.filter(p=>p.sale?.status==="completed"&&new Date(p.paid_at).toLocaleDateString("sv-SE",{timeZone:"America/Bogota"})===displayDayKey).reduce((a,p)=>{a[p.method==="cash"?"cashIncome":"bankIncome"]+=Number(p.amount)||0;return a},{cashIncome:0,bankIncome:0});
- const whatsappChannelTotals=useMemo(()=>{const matched=new Set<string>();return ledgerMovements.filter(m=>m.source==="whatsapp_october_2026"&&m.direction==="income"&&m.movement_date===displayDayKey).reduce((a,m)=>{const channel=m.payment_channel==="cash"?"cash":"bank_transfer";const duplicate=salePayments.find(p=>!matched.has(p.id)&&p.sale?.status==="completed"&&new Date(p.paid_at).toLocaleDateString("sv-SE",{timeZone:"America/Bogota"})===displayDayKey&&Number(p.amount)===Number(m.amount)&&(p.method==="cash"?"cash":"bank_transfer")===channel);if(duplicate){matched.add(duplicate.id);return a}a[channel==="cash"?"cashIncome":"bankIncome"]+=Number(m.amount)||0;return a},{cashIncome:0,bankIncome:0})},[ledgerMovements,salePayments,displayDayKey]);
+ const sessionSaleChannelTotals=salePayments.filter(p=>p.sale?.status==="completed"&&new Date(p.paid_at).toLocaleDateString("sv-SE",{timeZone:"America/Bogota"})>=turnDate).reduce((a,p)=>{a[p.method==="cash"?"cashIncome":"bankIncome"]+=Number(p.amount)||0;return a},{cashIncome:0,bankIncome:0});
+ const whatsappSessionChannelTotals=useMemo(()=>{const matched=new Set<string>();return ledgerMovements.filter(m=>m.source==="whatsapp_october_2026"&&m.direction==="income"&&m.movement_date>=turnDate).reduce((a,m)=>{const channel=m.payment_channel==="cash"?"cash":"bank_transfer";const duplicate=salePayments.find(p=>!matched.has(p.id)&&p.sale?.status==="completed"&&new Date(p.paid_at).toLocaleDateString("sv-SE",{timeZone:"America/Bogota"})===m.movement_date&&Number(p.amount)===Number(m.amount)&&(p.method==="cash"?"cash":"bank_transfer")===channel);if(duplicate){matched.add(duplicate.id);return a}a[channel==="cash"?"cashIncome":"bankIncome"]+=Number(m.amount)||0;return a},{cashIncome:0,bankIncome:0})},[ledgerMovements,salePayments,turnDate]);
 
- const receivableBankIncome=useMemo(()=>ledgerMovements.filter(m=>m.source==="receivable"&&m.direction==="income"&&m.movement_date===displayDayKey&&m.payment_channel==="bank_transfer").reduce((sum,m)=>sum+(Number(m.amount)||0),0),[ledgerMovements,displayDayKey]);
- // Los egresos importados o registrados en Finanzas no siempre tienen espejo en cash_movements.
+ const receivableSessionBankIncome=useMemo(()=>ledgerMovements.filter(m=>m.source==="receivable"&&m.direction==="income"&&m.movement_date>=turnDate&&m.payment_channel==="bank_transfer").reduce((sum,m)=>sum+(Number(m.amount)||0),0),[ledgerMovements,turnDate]);
+ // Los egresos externos se suman desde la apertura del turno, aunque el turno siga abierto varios días.
  // Excluimos los orígenes cash/payroll, que ya se contabilizan desde Caja para evitar duplicarlos.
- const externalLedgerOutgoing=useMemo(()=>ledgerMovements.filter(m=>m.direction==="expense"&&m.movement_date===displayDayKey&&m.source!=="cash"&&m.source!=="payroll").reduce((sum,m)=>{if(m.payment_channel==="bank_transfer")sum.bank+=Number(m.amount)||0;else sum.cash+=Number(m.amount)||0;return sum},{cash:0,bank:0}),[ledgerMovements,displayDayKey]);
+ const externalSessionLedgerOutgoing=useMemo(()=>ledgerMovements.filter(m=>m.direction==="expense"&&m.movement_date>=turnDate&&m.source!=="cash"&&m.source!=="payroll").reduce((sum,m)=>{if(m.payment_channel==="bank_transfer")sum.bank+=Number(m.amount)||0;else sum.cash+=Number(m.amount)||0;return sum},{cash:0,bank:0}),[ledgerMovements,turnDate]);
  const dailyIncome=useMemo(()=>{
   const saleIncome=salePayments.filter(p=>p.sale?.status==="completed"&&new Date(p.paid_at).toLocaleDateString("sv-SE",{timeZone:"America/Bogota"})===displayDayKey).reduce((sum,p)=>sum+(Number(p.amount)||0),0);
   const otherCashIncome=movements.filter(m=>m.kind==="income"&&!String(m.reference??"").startsWith("sale:")&&new Date(m.created_at).toLocaleDateString("sv-SE",{timeZone:"America/Bogota"})===displayDayKey).reduce((sum,m)=>sum+(Number(m.amount)||0),0);
@@ -77,8 +77,8 @@ export default function CashPage(){
  const openingTotal=openingCash+openingBank;
  const channelTotals=useMemo(()=>activeMovements.filter(m=>!String(m.reference??"").startsWith("sale:")).reduce((a,m)=>{const amount=Number(m.amount)||0;const channel=m.payment_channel??"cash";if(m.kind==="income")a[channel==="bank_transfer"?"bankIncome":"cashIncome"]+=amount;else if(m.kind==="expense"||m.kind==="withdrawal")a[channel==="bank_transfer"?"bankOutgoing":"cashOutgoing"]+=amount;return a},{cashIncome:0,bankIncome:0,cashOutgoing:0,bankOutgoing:0}),[activeMovements]);
 
- const expectedCash=openingCash+channelTotals.cashIncome+saleChannelTotals.cashIncome+whatsappChannelTotals.cashIncome-channelTotals.cashOutgoing-externalLedgerOutgoing.cash;
- const expectedBank=openingBank+channelTotals.bankIncome+saleChannelTotals.bankIncome+whatsappChannelTotals.bankIncome+receivableBankIncome-channelTotals.bankOutgoing-externalLedgerOutgoing.bank;
+ const expectedCash=openingCash+channelTotals.cashIncome+sessionSaleChannelTotals.cashIncome+whatsappSessionChannelTotals.cashIncome-channelTotals.cashOutgoing-externalSessionLedgerOutgoing.cash;
+ const expectedBank=openingBank+channelTotals.bankIncome+sessionSaleChannelTotals.bankIncome+whatsappSessionChannelTotals.bankIncome+receivableSessionBankIncome-channelTotals.bankOutgoing-externalSessionLedgerOutgoing.bank;
  const expected=expectedCash+expectedBank;
  const consolidatedBalance=useMemo(()=>{
   // Parte del ultimo saldo inicial confirmado para no acumular aperturas anteriores.
