@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
-import Image from "next/image";\nimport { Wrench, Plus, Search, RefreshCw, Clock3, CheckCircle2, Package, CalendarClock, CircleDollarSign, X, Save, ClipboardCheck, Smartphone, ReceiptText, Upload, Image as ImageIcon, Video, ExternalLink, Trash2, MousePointerClick } from "lucide-react";
+import Image from "next/image";
+import { Wrench, Plus, Search, RefreshCw, Clock3, CheckCircle2, Package, CalendarClock, CircleDollarSign, X, Save, ClipboardCheck, Smartphone, ReceiptText, Upload, Image as ImageIcon, Video, ExternalLink, Trash2, MousePointerClick } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 type Status = "received"|"diagnosing"|"awaiting_approval"|"awaiting_parts"|"in_repair"|"ready"|"delivered"|"cancelled";
