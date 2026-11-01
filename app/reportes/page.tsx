@@ -17,7 +17,9 @@ export default function Page(){
    supabase.from("products").select("id,name,cost_price,selling_price,stock_quantity,min_stock"),
    supabase.from("financial_movements").select("movement_date,direction,amount,source").gte("movement_date",from).lte("movement_date",to).limit(10000),
    supabase.from("expenses").select("amount,expense_date").gte("expense_date",from).lte("expense_date",to),
-   supabase.from("service_orders").select("id,estimated_cost,final_cost,parts_cost,received_at,status").gte("received_at",from+"T00:00:00-05:00").lte("received_at",to+"T23:59:59-05:00")
+   supabase.from("service_orders").select("id,estimated_cost,final_cost,parts_cost,received_at,status").gte("received_at",from+"T00:00:00-05:00").lte("received_at",to+"T23:59:59-05:00"),
+   supabase.from("purchases").select("total,purchase_date,status").gte("purchase_date",from).lte("purchase_date",to).neq("status","cancelled"),
+   supabase.from("payroll_entries").select("net_amount,paid_at,status").eq("status","paid").gte("paid_at",from+"T00:00:00-05:00").lte("paid_at",to+"T23:59:59-05:00")
   ]);
   const errors=[a.error,b.error,c.error,d.error,e.error,f.error,g.error,h.error].filter(Boolean);
   if(errors.length)se(errors.map(x=>x?.message).join(" · "));
@@ -36,7 +38,8 @@ export default function Page(){
  const out=ledger.filter(m=>m.direction==="expense").reduce((n,m)=>n+Number(m.amount||0),0);
  const expense=expenses.reduce((n,e)=>n+Number(e.amount||0),0);
  const activeOrders=orders.filter(o=>o.status!=="cancelled"),service=activeOrders.reduce((n,o)=>n+Number(o.final_cost??o.estimated_cost??0),0),serviceParts=activeOrders.reduce((n,o)=>n+Number(o.parts_cost||0),0),serviceMargin=service-serviceParts,lowStock=products.filter(p=>Number(p.stock_quantity)>0&&Number(p.stock_quantity)<=Number(p.min_stock||0)).length,outOfStock=products.filter(p=>Number(p.stock_quantity)===0).length;
- const receivable=receipts.reduce((n,p)=>n+Number(p.amount||0),0);\n const purchaseTotal=purchases.reduce((n,p)=>n+Number(p.total||0),0),payrollTotal=payroll.reduce((n,p)=>n+Number(p.net_amount||0),0);
+ const receivable=receipts.reduce((n,p)=>n+Number(p.amount||0),0);
+ const purchaseTotal=purchases.reduce((n,p)=>n+Number(p.total||0),0),payrollTotal=payroll.reduce((n,p)=>n+Number(p.net_amount||0),0);
  const days=useMemo(()=>{const m=new Map<string,number>();done.forEach(s=>{const day=new Intl.DateTimeFormat("en-CA",{timeZone:"America/Bogota",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date(s.created_at));m.set(day,(m.get(day)||0)+Number(s.total||0))});return [...m.entries()].sort((a,b)=>a[0].localeCompare(b[0]))},[done]);
  return <div className="content"><div className="page-head"><div><div className="eyebrow">ANÁLISIS DEL NEGOCIO</div><h1>Reportes</h1><p>Compara periodos de ventas, margen, inventario, caja, gastos, cartera y servicio técnico.</p></div><button className="button secondary" onClick={()=>void load()} disabled={loading}><RefreshCw size={14}/> Actualizar</button></div>
  {error&&<div className="notice service-error" role="alert">{error}</div>}
