@@ -184,11 +184,14 @@ export default function ServiceTechnicalPage(){
   e.preventDefault();if(!supabase||!active)return;
   const amount=Number(payAmount);if(!Number.isFinite(amount)||amount<=0){setError("El abono debe ser mayor que cero.");return}
   setSaving(true);setError("");setMessage("");
-  const {error}=await supabase.from("service_payments").insert({service_order_id:active.id,amount,method:payMethod,reference:payReference.trim()||null});
-  setSaving(false);if(error){setError("No se pudo registrar el abono: "+error.message);return}
-  setMessage("Abono registrado.");setPayAmount("");setPayReference("");
+  const {data:session,error:sessionError}=await supabase.from("cash_sessions").select("id").is("closed_at",null).order("opened_at",{ascending:false}).limit(1).maybeSingle();
+  if(sessionError||!session){setSaving(false);setError(sessionError?"No se pudo consultar la caja: "+sessionError.message:"Abre una caja antes de registrar el abono.");return}
+  const {error}=await supabase.rpc("register_service_payment",{p_service_order_id:active.id,p_amount:amount,p_method:payMethod,p_reference:payReference.trim()||null,p_cash_session_id:session.id});
+  if(error){setSaving(false);setError("No se pudo registrar el abono: "+error.message);return}
+  setMessage("Abono registrado y asociado a Caja. Se reflejará en el libro financiero al actualizar Caja.");setPayAmount("");setPayReference("");
   const {data,error:payError}=await supabase.from("service_payments").select("id,amount,method,reference,created_at").eq("service_order_id",active.id).order("created_at",{ascending:false});
   if(!payError)setPayments((data??[]) as Payment[]);
+  setSaving(false);
  }
  function startNew(){setDraft(initialDraft);setShowForm(v=>!v);setError("");setMessage("");}
  return <div className="content service-page">
