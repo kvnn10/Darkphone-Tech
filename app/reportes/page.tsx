@@ -19,7 +19,8 @@ export default function Page(){
    supabase.from("expenses").select("amount,expense_date").gte("expense_date",from).lte("expense_date",to),
    supabase.from("service_orders").select("id,estimated_cost,final_cost,parts_cost,received_at,status").gte("received_at",from+"T00:00:00-05:00").lte("received_at",to+"T23:59:59-05:00"),
    supabase.from("purchases").select("total,purchase_date,status").gte("purchase_date",from).lte("purchase_date",to).neq("status","cancelled"),
-   supabase.from("payroll_entries").select("net_amount,paid_at,status").eq("status","paid").gte("paid_at",from+"T00:00:00-05:00").lte("paid_at",to+"T23:59:59-05:00")
+   supabase.from("payroll_entries").select("net_amount,paid_at,status").eq("status","paid").gte("paid_at",from+"T00:00:00-05:00").lte("paid_at",to+"T23:59:59-05:00"),
+   supabase.from("payroll_employees").select("id,full_name").order("full_name")
   ]);
   const errors=[a.error,b.error,c.error,d.error,e.error,f.error,g.error,h.error,i.error].filter(Boolean);
   if(errors.length)se(errors.map(x=>x?.message).join(" · "));
