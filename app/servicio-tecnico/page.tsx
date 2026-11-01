@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
-import { Wrench, Plus, Search, RefreshCw, Clock3, CheckCircle2, Package, CalendarClock, CircleDollarSign, X, Save, ClipboardCheck, Smartphone, ReceiptText, Upload, Image as ImageIcon, Video, ExternalLink, Trash2, MousePointerClick } from "lucide-react";
+import Image from "next/image";\nimport { Wrench, Plus, Search, RefreshCw, Clock3, CheckCircle2, Package, CalendarClock, CircleDollarSign, X, Save, ClipboardCheck, Smartphone, ReceiptText, Upload, Image as ImageIcon, Video, ExternalLink, Trash2, MousePointerClick } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 type Status = "received"|"diagnosing"|"awaiting_approval"|"awaiting_parts"|"in_repair"|"ready"|"delivered"|"cancelled";
@@ -228,7 +228,7 @@ export default function ServiceTechnicalPage(){
      <p className="service-footnote">Adjunta evidencia al recibir el equipo y durante el diagnóstico, reparación o entrega. Los archivos se guardan de forma privada en esta orden.</p>
      {evidence.length>0?<div className="service-evidence-grid">{evidence.map(item=><article className="service-evidence-card" key={item.id}>
       <a className="service-evidence-preview" href={item.url||undefined} target="_blank" rel="noreferrer" aria-label={"Abrir "+item.file_name}>
-       {item.mime_type.startsWith("video/")?<span className="service-evidence-file"><Video size={25}/><small>VIDEO</small></span>:item.url?<img src={item.url} alt={item.file_name}/>:<span className="service-evidence-file"><ImageIcon size={25}/></span>}
+       {item.mime_type.startsWith("video/")?<span className="service-evidence-file"><Video size={25}/><small>VIDEO</small></span>:item.url?<Image src={item.url} alt={item.file_name} width={320} height={220} unoptimized/>:<span className="service-evidence-file"><ImageIcon size={25}/></span>}
        <span className="service-evidence-open"><ExternalLink size={13}/></span>
       </a><div className="service-evidence-info"><b>{item.file_name}</b><span>{evidenceCategories.find(x=>x.value===item.category)?.label??item.category} · {(item.file_size/1048576).toFixed(1)} MB</span>{item.notes&&<small>{item.notes}</small>}<small>{new Date(item.created_at).toLocaleString("es-CO",{dateStyle:"short",timeStyle:"short"})}</small></div>
      </article>)}</div>:<div className="service-evidence-empty"><ImageIcon size={20}/><span>Aún no hay fotos ni videos en esta orden.</span></div>}
