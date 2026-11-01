@@ -68,9 +68,15 @@ export default function CashPage(){
  const dailyIncome=useMemo(()=>{
   const saleIncome=salePayments.filter(p=>p.sale?.status==="completed"&&new Date(p.paid_at).toLocaleDateString("sv-SE",{timeZone:"America/Bogota"})===displayDayKey).reduce((sum,p)=>sum+(Number(p.amount)||0),0);
   const otherCashIncome=movements.filter(m=>m.kind==="income"&&!String(m.reference??"").startsWith("sale:")&&new Date(m.created_at).toLocaleDateString("sv-SE",{timeZone:"America/Bogota"})===displayDayKey).reduce((sum,m)=>sum+(Number(m.amount)||0),0);
-  const whatsappIncome=whatsappChannelTotals.cashIncome+whatsappChannelTotals.bankIncome;
-  return saleIncome+otherCashIncome+whatsappIncome+receivableBankIncome;
- },[salePayments,movements,whatsappChannelTotals,receivableBankIncome,displayDayKey]);
+  const matchedWhatsAppSales=new Set<string>();
+  const whatsappIncome=ledgerMovements.filter(m=>m.source==="whatsapp_october_2026"&&m.direction==="income"&&m.movement_date===displayDayKey).reduce((sum,m)=>{
+   const duplicate=salePayments.find(p=>!matchedWhatsAppSales.has(p.id)&&p.sale?.status==="completed"&&new Date(p.paid_at).toLocaleDateString("sv-SE",{timeZone:"America/Bogota"})===displayDayKey&&Number(p.amount)===Number(m.amount)&&(p.method==="cash"?"cash":"bank_transfer")===m.payment_channel);
+   if(duplicate){matchedWhatsAppSales.add(duplicate.id);return sum}
+   return sum+(Number(m.amount)||0);
+  },0);
+  const receivableIncome=ledgerMovements.filter(m=>m.source==="receivable"&&m.direction==="income"&&m.movement_date===displayDayKey).reduce((sum,m)=>sum+(Number(m.amount)||0),0);
+  return saleIncome+otherCashIncome+whatsappIncome+receivableIncome;
+ },[salePayments,movements,ledgerMovements,displayDayKey]);
 
  const openingCash=Number(active?.opening_amount??displaySession?.counted_amount??displaySession?.expected_amount??displaySession?.opening_amount??0)||0;
  const openingBank=Number(active?.opening_transfer_amount??displaySession?.counted_transfer_amount??displaySession?.expected_transfer_amount??0)||0;
