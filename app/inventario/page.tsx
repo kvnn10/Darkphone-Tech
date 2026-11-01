@@ -1,6 +1,6 @@
 "use client";
 import { useCallback,useEffect,useMemo,useState } from "react";
-import { Plus,Search,RefreshCw,Package,AlertTriangle,ArrowUpDown,Pencil,Trash2,Boxes,CircleDollarSign,Layers3,TrendingUp } from "lucide-react";
+import { Plus,Search,RefreshCw,Package,AlertTriangle,ArrowUpDown,Pencil,Trash2,Boxes,CircleDollarSign,TrendingUp } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 const PRODUCT_CATEGORIES=["Accesorios","Audio","Baterías","Cocos","Celulares","Computadores","Displays","Pantallas","Repuestos","Tablets","Tapas","Tapas completas","Tapas lisas","Otros"];
 type Product={id:string;name:string;brand:string|null;model:string|null;sku:string|null;category:string|null;cost_price:number;selling_price:number;stock_quantity:number;pending_stock_quantity:number;min_stock:number;has_imei:boolean;created_at:string}; type StockMovement={id:string;movement_type:string;quantity_delta:number;unit_cost:number;reference_type:string|null;notes:string|null;created_at:string;products?:{name:string}|{name:string}[]|null}; type SortKey="name"|"category"|"cost_price"|"selling_price"|"stock_quantity"|"has_imei";
