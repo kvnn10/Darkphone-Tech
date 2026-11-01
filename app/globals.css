@@ -1276,3 +1276,9 @@ html,body{background:#0b1016;color:#e6edf6}
  .cash-day-row>strong{font-size:11px}
  .cash-day-footer{gap:10px 14px;padding:10px 11px}
 }
+
+/* Nómina: formularios y confirmación de pago */
+.modal-backdrop{position:fixed;inset:0;z-index:1000;background:#0b1b2dcc;display:flex;align-items:center;justify-content:center;padding:18px;overflow-y:auto}
+.modal{width:min(100%,560px);max-height:calc(100vh - 36px);overflow-y:auto;box-shadow:0 24px 80px #07142655}
+.search-field{display:flex;align-items:center;gap:9px;border:1px solid var(--line);background:#fff;border-radius:9px;padding:0 12px;margin:14px 0}
+.search-field input{border:0;outline:0;box-shadow:none!important;min-width:0;width:100%;padding:11px 0}
