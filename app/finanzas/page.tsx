@@ -3,7 +3,8 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react
 import { supabase } from "@/lib/supabase";
 import { RefreshCw, Plus, ArrowDownLeft, ArrowUpRight, Landmark, Banknote, HandCoins } from "lucide-react";
 
-type SaleWithPayments={id:string;sale_number:number;total:number;created_at:string;customers:{full_name:string|null}|{full_name:string|null}[]|null;sale_payments:{id:string;method:string;amount:number;reference:string|null}[]};\ntype Movement={id:string;movement_date:string;direction:"income"|"expense"|"opening"|"adjustment";amount:number;payment_channel:"bank_transfer"|"cash";description:string|null;pending_delta:number;source:string;source_message:string|null;created_at:string};
+type SaleWithPayments={id:string;sale_number:number;total:number;created_at:string;customers:{full_name:string|null}|{full_name:string|null}[]|null;sale_payments:{id:string;method:string;amount:number;reference:string|null}[]};
+type Movement={id:string;movement_date:string;direction:"income"|"expense"|"opening"|"adjustment";amount:number;payment_channel:"bank_transfer"|"cash";description:string|null;pending_delta:number;source:string;source_message:string|null;created_at:string};
 const fmt=(n:number)=>new Intl.NumberFormat("es-CO",{style:"currency",currency:"COP",maximumFractionDigits:0}).format(n||0);
 const monthNow=()=>new Date().toLocaleDateString("en-CA",{timeZone:"America/Bogota"}).slice(0,7);
 const dayOf=(s:string)=>s.slice(0,10);
