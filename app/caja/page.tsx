@@ -95,7 +95,19 @@ export default function CashPage(){
   // Efectivo y bancos se guardan como dos filas de apertura con el mismo identificador de caja.
   // Sumar ambas evita que el saldo consolidado arranque solo con uno de los dos canales.
   const openingAmount=openings.filter(m=>m.movement_date===baseDate&&m.source_message===latestOpening.source_message).reduce((sum,m)=>sum+(Number(m.amount)||0),0);
-  const laterMovements=ledgerMovements.filter(m=>m.direction!=="opening"&&m.movement_date>=baseDate);
+  const rawLaterMovements=ledgerMovements.filter(m=>m.direction!=="opening"&&m.movement_date>=baseDate);
+  // Un ingreso importado de WhatsApp puede ser el mismo pago que ya tiene una venta registrada.
+  // En el saldo consolidado se conserva el movimiento canónico de venta y se omite su espejo WhatsApp.
+  const whatsappDuplicates=new Set<string>();
+  const laterMovements=rawLaterMovements.filter(m=>{
+   if(m.source!=="whatsapp_october_2026"||m.direction!=="income")return true;
+   const localDate=m.movement_date;
+   const channel=m.payment_channel==="cash"?"cash":"bank_transfer";
+   const duplicate=salePayments.find(p=>!whatsappDuplicates.has(p.id)&&p.sale?.status==="completed"&&new Date(p.paid_at).toLocaleDateString("sv-SE",{timeZone:"America/Bogota"})===localDate&&Number(p.amount)===Number(m.amount)&&(p.method==="cash"?"cash":"bank_transfer")===channel);
+   if(!duplicate)return true;
+   whatsappDuplicates.add(duplicate.id);
+   return false;
+  });
   const signed=(m:LedgerMovement)=>m.direction==="expense"?-Number(m.amount||0):Number(m.amount||0);
   const ledgerTotal=laterMovements.reduce((sum,m)=>sum+signed(m),0);
   const matched=new Set<string>();
