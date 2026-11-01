@@ -58,6 +58,9 @@ export default function CashPage(){
   return base;
  },[activeMovements,salePayments,ledgerMovements,turnDate]);
  const displayDayKey=today();
+ const saleChannelTotals=salePayments.filter(p=>p.sale?.status==="completed"&&new Date(p.paid_at).toLocaleDateString("sv-SE",{timeZone:"America/Bogota"})===displayDayKey).reduce((a,p)=>{a[p.method==="cash"?"cashIncome":"bankIncome"]+=Number(p.amount)||0;return a},{cashIncome:0,bankIncome:0});
+ const whatsappChannelTotals=useMemo(()=>{const matched=new Set<string>();return ledgerMovements.filter(m=>m.source==="whatsapp_october_2026"&&m.direction==="income"&&m.movement_date===displayDayKey).reduce((a,m)=>{const channel=m.payment_channel==="cash"?"cash":"bank_transfer";const duplicate=salePayments.find(p=>!matched.has(p.id)&&p.sale?.status==="completed"&&new Date(p.paid_at).toLocaleDateString("sv-SE",{timeZone:"America/Bogota"})===displayDayKey&&Number(p.amount)===Number(m.amount)&&(p.method==="cash"?"cash":"bank_transfer")===channel);if(duplicate){matched.add(duplicate.id);return a}a[channel==="cash"?"cashIncome":"bankIncome"]+=Number(m.amount)||0;return a},{cashIncome:0,bankIncome:0})},[ledgerMovements,salePayments,displayDayKey]);
+
  const dailyIncome=useMemo(()=>{
   const saleIncome=salePayments.filter(p=>p.sale?.status==="completed"&&new Date(p.paid_at).toLocaleDateString("sv-SE",{timeZone:"America/Bogota"})===displayDayKey).reduce((sum,p)=>sum+(Number(p.amount)||0),0);
   const otherCashIncome=movements.filter(m=>m.kind==="income"&&!String(m.reference??"").startsWith("sale:")&&new Date(m.created_at).toLocaleDateString("sv-SE",{timeZone:"America/Bogota"})===displayDayKey).reduce((sum,m)=>sum+(Number(m.amount)||0),0);
@@ -69,8 +72,7 @@ export default function CashPage(){
  const openingBank=Number(active?.opening_transfer_amount??displaySession?.counted_transfer_amount??displaySession?.expected_transfer_amount??0)||0;
  const openingTotal=openingCash+openingBank;
  const channelTotals=useMemo(()=>activeMovements.filter(m=>!String(m.reference??"").startsWith("sale:")).reduce((a,m)=>{const amount=Number(m.amount)||0;const channel=m.payment_channel??"cash";if(m.kind==="income")a[channel==="bank_transfer"?"bankIncome":"cashIncome"]+=amount;else if(m.kind==="expense"||m.kind==="withdrawal")a[channel==="bank_transfer"?"bankOutgoing":"cashOutgoing"]+=amount;return a},{cashIncome:0,bankIncome:0,cashOutgoing:0,bankOutgoing:0}),[activeMovements]);
- const saleChannelTotals=salePayments.filter(p=>p.sale?.status==="completed"&&new Date(p.paid_at).toLocaleDateString("sv-SE",{timeZone:"America/Bogota"})===displayDayKey).reduce((a,p)=>{a[p.method==="cash"?"cashIncome":"bankIncome"]+=Number(p.amount)||0;return a},{cashIncome:0,bankIncome:0});
- const whatsappChannelTotals=useMemo(()=>{const matched=new Set<string>();return ledgerMovements.filter(m=>m.source==="whatsapp_october_2026"&&m.direction==="income"&&m.movement_date===displayDayKey).reduce((a,m)=>{const channel=m.payment_channel==="cash"?"cash":"bank_transfer";const duplicate=salePayments.find(p=>!matched.has(p.id)&&p.sale?.status==="completed"&&new Date(p.paid_at).toLocaleDateString("sv-SE",{timeZone:"America/Bogota"})===displayDayKey&&Number(p.amount)===Number(m.amount)&&(p.method==="cash"?"cash":"bank_transfer")===channel);if(duplicate){matched.add(duplicate.id);return a}a[channel==="cash"?"cashIncome":"bankIncome"]+=Number(m.amount)||0;return a},{cashIncome:0,bankIncome:0})},[ledgerMovements,salePayments,displayDayKey]);
+
  const expectedCash=openingCash+channelTotals.cashIncome+saleChannelTotals.cashIncome+whatsappChannelTotals.cashIncome-channelTotals.cashOutgoing;
  const expectedBank=openingBank+channelTotals.bankIncome+saleChannelTotals.bankIncome+whatsappChannelTotals.bankIncome-channelTotals.bankOutgoing;
  const expected=expectedCash+expectedBank;
