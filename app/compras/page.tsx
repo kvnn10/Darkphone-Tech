@@ -1,7 +1,7 @@
 "use client";
 import {useCallback,useEffect,useMemo,useState,type FormEvent} from "react";
 import {supabase} from "@/lib/supabase";
-import {Plus,RefreshCw,ShoppingCart,PackageCheck,Truck,Clock3,Search,ArrowDownToLine,Trash2,ReceiptText} from "lucide-react";
+import {Plus,RefreshCw,ShoppingCart,PackageCheck,Truck,Search,Trash2,ReceiptText} from "lucide-react";
 
 type Product={id:string;name:string;sku:string|null;category:string;cost_price:number;pending_stock_quantity:number;stock_quantity:number};
 type Item={id:string;product_id:string;quantity:number;received_quantity:number;unit_cost:number;line_total:number;products?:{name:string;sku:string|null}|null};
