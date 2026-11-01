@@ -80,8 +80,10 @@ export default function CashPage(){
   const latestOpening=openings[0]??null;
   if(!latestOpening)return 0;
   const baseDate=latestOpening.movement_date;
-  const openingAmount=Number(latestOpening.amount)||0;
-  const laterMovements=ledgerMovements.filter(m=>m.id!==latestOpening.id&&m.movement_date>=baseDate&&m.direction!=="opening");
+  // Efectivo y bancos se guardan como dos filas de apertura con el mismo identificador de caja.
+  // Sumar ambas evita que el saldo consolidado arranque solo con uno de los dos canales.
+  const openingAmount=openings.filter(m=>m.movement_date===baseDate&&m.source_message===latestOpening.source_message).reduce((sum,m)=>sum+(Number(m.amount)||0),0);
+  const laterMovements=ledgerMovements.filter(m=>m.direction!=="opening"&&m.movement_date>=baseDate);
   const signed=(m:LedgerMovement)=>m.direction==="expense"?-Number(m.amount||0):Number(m.amount||0);
   const ledgerTotal=laterMovements.reduce((sum,m)=>sum+signed(m),0);
   const matched=new Set<string>();
