@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { Plus, Search, RefreshCw, Receipt, Trash2, X, CalendarDays, WalletCards, TrendingDown, Pencil, Save } from "lucide-react";
+import { Plus, Search, RefreshCw, Receipt, Trash2, X, CalendarDays, TrendingDown, Pencil, Save } from "lucide-react";
 
 type Expense = {
   id: string;
