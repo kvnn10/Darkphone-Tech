@@ -139,7 +139,7 @@ export default function SalesPage(){
   @page{size:80mm auto;margin:0}
   @media print{body{max-width:none;width:72mm;padding:4mm}.actions{display:none!important}}
   </style></head><body>
-  <nav class="actions"><button id="save-pdf">Guardar / compartir PDF</button><button class="secondary" id="print-ticket">Imprimir</button><button class="secondary" id="back-darkphone">Volver</button></nav>
+  <nav class="actions"><button id="save-pdf">Guardar / compartir PDF</button><button class="secondary" id="print-ticket">Imprimir</button><button class="secondary" id="back-darkphone">Volver</button><span id="pdf-status" role="status" aria-live="polite"></span></nav>
   <header class="brand"><img class="logo" src="${window.location.origin}/darkphone-mark.svg" alt="Logo Darkphone" onerror="this.style.display='none'"><h1>DARKPHONE</h1><p class="subtitle">COMPROBANTE DE VENTA</p></header>
   <hr class="rule">
   <section class="meta"><div><span>Fecha</span><span>${escapeHtml(new Date(data.created_at).toLocaleString("es-CO",{dateStyle:"short",timeStyle:"short"}))}</span></div><div><span>Cliente</span><span>${escapeHtml(data.customer_name||"Mostrador")}</span></div>${data.customer_phone?`<div><span>Teléfono</span><span>${escapeHtml(data.customer_phone)}</span></div>`:""}</section>
@@ -197,21 +197,27 @@ export default function SalesPage(){
     pdf+="trailer\n<< /Size "+(objs.length+1)+" /Root "+catalog+" 0 R >>\nstartxref\n"+xref+"\n%%EOF";
     return new Blob([pdf],{type:"application/pdf"});
   };
+  const pdfStatus=printWindow.document.getElementById("pdf-status");
+  const showPdfStatus=(message:string)=>{if(pdfStatus)pdfStatus.textContent=message};
   printWindow.document.getElementById("save-pdf")?.addEventListener("click",async()=>{
     try{
+      showPdfStatus("Preparando PDF…");
       const blob=buildPdf(),file=new File([blob],"Darkphone-venta-"+pdfReceipt.sale_number+".pdf",{type:"application/pdf"});
-      if(navigator.share&&navigator.canShare?.({files:[file]})){
-        await navigator.share({files:[file],title:"Comprobante Darkphone #"+pdfReceipt.sale_number});
+      const childNavigator=printWindow.navigator;
+      if(childNavigator.share&&childNavigator.canShare?.({files:[file]})){
+        await childNavigator.share({files:[file],title:"Comprobante Darkphone #"+pdfReceipt.sale_number});
+        showPdfStatus("PDF listo para compartir.");
       }else{
-        const url=URL.createObjectURL(blob);
+        const url=printWindow.URL.createObjectURL(blob);
         printWindow.location.href=url;
-        setTimeout(()=>URL.revokeObjectURL(url),120000);
       }
     }catch(error){
-      if(error instanceof Error&&error.name!=="AbortError")setMessage("No se pudo generar el PDF. Intenta nuevamente.");
+      if(error instanceof Error&&error.name==="AbortError"){showPdfStatus("Compartir cancelado.");return}
+      showPdfStatus("No se pudo compartir. Usa Imprimir y luego Guardar como PDF.");
+      console.error("Error al generar o compartir el comprobante PDF:",error);
     }
   });
-  printWindow.document.getElementById("print-ticket")?.addEventListener("click",()=>printWindow.print());
+  printWindow.document.getElementById("print-ticket")?.addEventListener("click",()=>{printWindow.focus();printWindow.print()});
   printWindow.document.getElementById("back-darkphone")?.addEventListener("click",()=>{printWindow.close();if(!printWindow.closed)window.focus()});
 }
 async function viewSale(sale:Sale){
