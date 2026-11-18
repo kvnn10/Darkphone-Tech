@@ -151,8 +151,8 @@ export default function SalesPage(){
   printWindow.document.close();
 
   const buildPdf=()=>{
-    const safe=s=>String(s??"").normalize("NFD").replace(/[\\u0300-\\u036f]/g,"").replace(/[^\\x20-\\x7E]/g," ");
-    const esc=s=>safe(s).replace(/\\\\/g,"\\\\\\\\").replace(/\\(/g,"\\\\(").replace(/\\)/g,"\\\\)");
+    const safe=s=>Array.from(String(s??"").normalize("NFD")).filter(ch=>{const n=ch.charCodeAt(0);return n<768||n>879}).map(ch=>{const n=ch.charCodeAt(0);return n>=32&&n<=126?ch:" "}).join("");
+    const esc=s=>safe(s).split("\\").join("\\\\").split("(").join("\\(").split(")").join("\\)");
     const lines=[];
     const push=(text,size=10,bold=false)=>lines.push({text:safe(text),size,bold});
     push("DARKPHONE",20,true);push("COMPROBANTE DE VENTA #"+pdfReceipt.sale_number,12,true);
