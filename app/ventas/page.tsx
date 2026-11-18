@@ -85,26 +85,9 @@ export default function SalesPage(){
   setMessage("Cliente registrado y asociado a esta venta.");
  }
  function printReceipt(data:ReceiptData){
-  // Imprime en un iframe oculto para no sacar al usuario de la app.
-  // En Safari móvil, una ventana emergente puede quedar abierta sin ofrecer
-  // una navegación clara de regreso a Ventas.
-  const printFrame=document.createElement("iframe");
-  printFrame.setAttribute("title","Comprobante de venta");
-  printFrame.setAttribute("aria-hidden","true");
-  printFrame.style.position="fixed";
-  printFrame.style.right="0";
-  printFrame.style.bottom="0";
-  printFrame.style.width="0";
-  printFrame.style.height="0";
-  printFrame.style.border="0";
-  document.body.appendChild(printFrame);
-  const printWindow=printFrame.contentWindow;
-  if(!printWindow){printFrame.remove();setMessage("No se pudo preparar la impresión. Intenta nuevamente.");return}
-  printWindow.addEventListener("afterprint",()=>printFrame.remove(),{once:true});
   const rows=data.items.map(item=>`<tr><td><b>${escapeHtml(item.name)}</b>${item.sku?`<small>SKU: ${escapeHtml(item.sku)}</small>`:""}${item.serial_number?`<small>IMEI/Serial: ${escapeHtml(item.serial_number)}</small>`:""}<small class="qty">${item.quantity} × ${fmt(item.unit_price)}</small></td><td class="num">${fmt(item.line_total)}</td></tr>`).join("");
   const paymentsHtml=data.payments.map(p=>`<div class="line"><span>${escapeHtml(paymentLabel(p.method))}${p.reference?`<small class="ref">${escapeHtml(p.reference)}</small>`:""}</span><b>${fmt(p.amount)}</b></div>`).join("");
-  printWindow.document.open();
-  printWindow.document.write(`<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Comprobante Darkphone</title><style>
+  const printMarkup=`<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Comprobante Darkphone</title><style>
   @page{size:80mm auto;margin:0}
   *{box-sizing:border-box}
   body{font:12px/1.45 Arial,Helvetica,sans-serif;color:#151515;margin:0 auto;max-width:72mm;background:#fff;padding:4mm}
@@ -147,8 +130,29 @@ export default function SalesPage(){
   <section class="totals"><div class="line"><span>Subtotal</span><b>${fmt(data.subtotal)}</b></div><div class="line"><span>Descuento</span><b>− ${fmt(data.discount)}</b></div><div class="line grand"><span>TOTAL</span><strong>${fmt(data.total)}</strong></div><p class="payments-title">Medios de pago</p>${paymentsHtml}</section>
   ${data.notes?`<section class="notes"><b>Observaciones</b><p>${escapeHtml(data.notes)}</p></section>`:""}
   <footer><p class="thanks">¡Gracias por tu compra!</p><p class="small">Conserva este comprobante</p><p class="small">DARKPHONE</p></footer>
-  <script>window.addEventListener("load",()=>setTimeout(()=>window.print(),350));</script></body></html>`);
-  printWindow.document.close();
+  <script>window.addEventListener("load",()=>setTimeout(()=>window.print(),350));</script></body></html>`;
+  // Safari en iPhone no siempre abre el diálogo de impresión desde un iframe.
+  // Renderizamos el comprobante en el documento principal y usamos su print().
+  const parsed=new DOMParser().parseFromString(printMarkup,"text/html");
+  const printRoot=document.createElement("div");
+  printRoot.id="darkphone-print-root";
+  printRoot.innerHTML=parsed.body.innerHTML;
+  const printStyle=document.createElement("style");
+  printStyle.id="darkphone-print-style";
+  printStyle.textContent=`
+    ${Array.from(parsed.head.querySelectorAll("style")).map(s=>s.textContent??"").join("\\n")}
+    @media screen{#darkphone-print-root{display:none!important}}
+    @media print{
+      @page{size:80mm auto;margin:0}
+      body>*:not(#darkphone-print-root){display:none!important}
+      #darkphone-print-root{display:block!important;position:absolute;inset:0;width:100%;background:#fff;color:#151515}
+      #darkphone-print-root body{display:block!important}
+    }`;
+  document.head.appendChild(printStyle);
+  document.body.appendChild(printRoot);
+  const cleanup=()=>{printRoot.remove();printStyle.remove();window.removeEventListener("afterprint",cleanup)};
+  window.addEventListener("afterprint",cleanup,{once:true});
+  window.setTimeout(()=>window.print(),250);
 }
 async function viewSale(sale:Sale){
   if(!supabase)return;
