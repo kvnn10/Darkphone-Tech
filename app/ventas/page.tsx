@@ -208,7 +208,7 @@ export default function SalesPage(){
         await childNavigator.share({files:[file],title:"Comprobante Darkphone #"+pdfReceipt.sale_number});
         showPdfStatus("PDF listo para compartir.");
       }else{
-        const url=printWindow.URL.createObjectURL(blob);
+        const url=URL.createObjectURL(blob);
         printWindow.location.href=url;
       }
     }catch(error){
