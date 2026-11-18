@@ -173,14 +173,15 @@ export default function SalesPage(){
     pdfReceipt.payments.forEach(p=>push(p.method+": "+fmt(p.amount)+(p.reference?" "+p.reference:""),9));
     if(pdfReceipt.notes){push("OBSERVACIONES",9,true);push(pdfReceipt.notes,9)}
     push("Gracias por tu compra - DARKPHONE",10,true);
-    const pageLines=[];let page=[];
+    type PdfLine={text:string;size:number;bold:boolean};
+    const pageLines:PdfLine[][]=[];let page:PdfLine[]=[];
     for(const line of lines){const chunks=line.text.match(/.{1,78}(?:\\s|$)/g)||[line.text];for(const chunk of chunks){if(page.length>=48){pageLines.push(page);page=[]}page.push({...line,text:chunk.trim()})}}
     if(page.length)pageLines.push(page);
-    const objs=[];const obj=s=>(objs.push(s),objs.length);
+    const objs:string[]=[];const obj=(s:string):number=>(objs.push(s),objs.length);
     const catalog=obj("<< /Type /Catalog /Pages 2 0 R >>"),pagesObj=obj("");
     const regular=obj("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>");
     const bold=obj("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>");
-    const refs=[];
+    const refs:number[]=[];
     pageLines.forEach(linesOnPage=>{
       let stream="BT\n",y=755;
       linesOnPage.forEach(line=>{stream+=(line.bold?"/F2 ":"/F1 ")+line.size+" Tf 1 0 0 1 42 "+y+" Tm ("+esc(line.text)+") Tj\n";y-=line.size+7});
