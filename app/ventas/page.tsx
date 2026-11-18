@@ -85,12 +85,17 @@ export default function SalesPage(){
   setMessage("Cliente registrado y asociado a esta venta.");
  }
  function printReceipt(data:ReceiptData){
+  const printWindow=window.open("","_blank");
+  if(!printWindow){setMessage("Safari bloqueó la ventana del comprobante. Permite las ventanas emergentes para este sitio e inténtalo de nuevo.");return}
   const rows=data.items.map(item=>`<tr><td><b>${escapeHtml(item.name)}</b>${item.sku?`<small>SKU: ${escapeHtml(item.sku)}</small>`:""}${item.serial_number?`<small>IMEI/Serial: ${escapeHtml(item.serial_number)}</small>`:""}<small class="qty">${item.quantity} × ${fmt(item.unit_price)}</small></td><td class="num">${fmt(item.line_total)}</td></tr>`).join("");
   const paymentsHtml=data.payments.map(p=>`<div class="line"><span>${escapeHtml(paymentLabel(p.method))}${p.reference?`<small class="ref">${escapeHtml(p.reference)}</small>`:""}</span><b>${fmt(p.amount)}</b></div>`).join("");
-  const printMarkup=`<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Comprobante Darkphone</title><style>
-  @page{size:80mm auto;margin:0}
+  printWindow.document.open();
+  printWindow.document.write(`<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Comprobante Darkphone #${data.sale_number}</title><style>
   *{box-sizing:border-box}
-  body{font:12px/1.45 Arial,Helvetica,sans-serif;color:#151515;margin:0 auto;max-width:72mm;background:#fff;padding:4mm}
+  body{font:12px/1.45 Arial,Helvetica,sans-serif;color:#151515;margin:0 auto;width:100%;max-width:80mm;background:#fff;padding:4mm}
+  .actions{position:sticky;top:0;display:flex;gap:8px;padding:10px;margin:-4mm -4mm 12px;background:#17212d;z-index:2}
+  .actions button{flex:1;border:0;border-radius:8px;padding:12px 8px;font-size:14px;font-weight:700;background:#1596d2;color:#fff}
+  .actions button.secondary{background:#344252}
   .brand{text-align:center;padding:4px 0 13px}
   .logo{display:block;width:46px;height:46px;object-fit:contain;border-radius:12px;margin:0 auto 8px}
   h1{font-size:22px;line-height:1;margin:0 0 6px;letter-spacing:1.8px;font-weight:800}
@@ -99,7 +104,7 @@ export default function SalesPage(){
   .meta{padding:10px 0}
   .meta div,.line{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin:5px 0}
   .meta span:first-child,.line>span{color:#555}
-  .meta b,.meta span:last-child{text-align:right;overflow-wrap:anywhere}
+  .meta span:last-child{text-align:right;overflow-wrap:anywhere}
   table{width:100%;border-collapse:collapse;margin:0}
   td{padding:9px 0;vertical-align:top;border-bottom:1px solid #e6e6e6}
   td:first-child{width:68%;padding-right:8px}
@@ -121,8 +126,10 @@ export default function SalesPage(){
   footer{text-align:center;border-top:1px dashed #aaa;margin-top:10px;padding:12px 0 3px}
   footer .thanks{font-size:12px;font-weight:700;margin:0 0 4px}
   footer .small{font-size:10px;color:#666;margin:2px 0}
-  @media screen{body{padding:12px}}
+  @page{size:80mm auto;margin:0}
+  @media print{body{max-width:none;width:72mm;padding:4mm}.actions{display:none!important}}
   </style></head><body>
+  <nav class="actions"><button onclick="window.print()">Imprimir ticket</button><button class="secondary" onclick="window.close();if(!window.closed)history.back()">Volver a Darkphone</button></nav>
   <header class="brand"><img class="logo" src="${window.location.origin}/darkphone-mark.svg" alt="Logo Darkphone" onerror="this.style.display='none'"><h1>DARKPHONE</h1><p class="subtitle">COMPROBANTE DE VENTA</p></header>
   <hr class="rule">
   <section class="meta"><div><span>Fecha</span><span>${escapeHtml(new Date(data.created_at).toLocaleString("es-CO",{dateStyle:"short",timeStyle:"short"}))}</span></div><div><span>Cliente</span><span>${escapeHtml(data.customer_name||"Mostrador")}</span></div>${data.customer_phone?`<div><span>Teléfono</span><span>${escapeHtml(data.customer_phone)}</span></div>`:""}</section>
@@ -130,29 +137,8 @@ export default function SalesPage(){
   <section class="totals"><div class="line"><span>Subtotal</span><b>${fmt(data.subtotal)}</b></div><div class="line"><span>Descuento</span><b>− ${fmt(data.discount)}</b></div><div class="line grand"><span>TOTAL</span><strong>${fmt(data.total)}</strong></div><p class="payments-title">Medios de pago</p>${paymentsHtml}</section>
   ${data.notes?`<section class="notes"><b>Observaciones</b><p>${escapeHtml(data.notes)}</p></section>`:""}
   <footer><p class="thanks">¡Gracias por tu compra!</p><p class="small">Conserva este comprobante</p><p class="small">DARKPHONE</p></footer>
-  <script>window.addEventListener("load",()=>setTimeout(()=>window.print(),350));</script></body></html>`;
-  // Safari en iPhone no siempre abre el diálogo de impresión desde un iframe.
-  // Renderizamos el comprobante en el documento principal y usamos su print().
-  const parsed=new DOMParser().parseFromString(printMarkup,"text/html");
-  const printRoot=document.createElement("div");
-  printRoot.id="darkphone-print-root";
-  printRoot.innerHTML=parsed.body.innerHTML;
-  const printStyle=document.createElement("style");
-  printStyle.id="darkphone-print-style";
-  printStyle.textContent=`
-    ${Array.from(parsed.head.querySelectorAll("style")).map(s=>s.textContent??"").join("\\n")}
-    @media screen{#darkphone-print-root{display:none!important}}
-    @media print{
-      @page{size:80mm auto;margin:0}
-      body>*:not(#darkphone-print-root){display:none!important}
-      #darkphone-print-root{display:block!important;position:absolute;inset:0;width:100%;background:#fff;color:#151515}
-      #darkphone-print-root body{display:block!important}
-    }`;
-  document.head.appendChild(printStyle);
-  document.body.appendChild(printRoot);
-  const cleanup=()=>{printRoot.remove();printStyle.remove();window.removeEventListener("afterprint",cleanup)};
-  window.addEventListener("afterprint",cleanup,{once:true});
-  window.setTimeout(()=>window.print(),250);
+  </body></html>`);
+  printWindow.document.close();
 }
 async function viewSale(sale:Sale){
   if(!supabase)return;
