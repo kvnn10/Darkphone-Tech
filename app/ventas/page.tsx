@@ -151,10 +151,10 @@ export default function SalesPage(){
   printWindow.document.close();
 
   const buildPdf=()=>{
-    const safe=s=>Array.from(String(s??"").normalize("NFD")).filter(ch=>{const n=ch.charCodeAt(0);return n<768||n>879}).map(ch=>{const n=ch.charCodeAt(0);return n>=32&&n<=126?ch:" "}).join("");
-    const esc=s=>safe(s).split("\\").join("\\\\").split("(").join("\\(").split(")").join("\\)");
+    const safe=(s:string)=>Array.from(String(s??"").normalize("NFD")).filter((ch:string)=>{const n=ch.charCodeAt(0);return n<768||n>879}).map((ch:string)=>{const n=ch.charCodeAt(0);return n>=32&&n<=126?ch:" "}).join("");
+    const esc=(s:string)=>safe(s).split("\\").join("\\\\").split("(").join("\\(").split(")").join("\\)");
     const lines=[];
-    const push=(text,size=10,bold=false)=>lines.push({text:safe(text),size,bold});
+    const push=(text:string,size:number=10,bold:boolean=false)=>lines.push({text:safe(text),size,bold});
     push("DARKPHONE",20,true);push("COMPROBANTE DE VENTA #"+pdfReceipt.sale_number,12,true);
     push("Fecha: "+pdfReceipt.created_at);push("Cliente: "+pdfReceipt.customer_name);
     if(pdfReceipt.customer_phone)push("Telefono: "+pdfReceipt.customer_phone);
