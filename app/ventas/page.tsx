@@ -173,7 +173,7 @@ export default function SalesPage(){
     const pageRefs=[];
     pages.forEach(items=>{
       let stream="BT\n";
-      items.forEach(it=>{stream+=(it.bold?"/F2 ":"/F1 ")+it.size+" Tf 42 "+it.y+" Td ("+pdfEscape(it.txt)+") Tj\n0 -"+(it.size+7)+" Td\n"});
+      items.forEach(it=>{stream+=(it.bold?"/F2 ":"/F1 ")+it.size+" Tf 1 0 0 1 42 "+it.y+" Tm ("+pdfEscape(it.txt)+") Tj\n"});
       stream+="ET";
       const streamId=addObj("<< /Length "+stream.length+" >>\nstream\n"+stream+"\nendstream");
       const pageId=addObj("<< /Type /Page /Parent "+pagesObj+" 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 "+font+" 0 R /F2 "+fontBold+" 0 R >> >> /Contents "+streamId+" 0 R >>");
