@@ -85,8 +85,22 @@ export default function SalesPage(){
   setMessage("Cliente registrado y asociado a esta venta.");
  }
  function printReceipt(data:ReceiptData){
-  const printWindow=window.open("","_blank","width=420,height=720");
-  if(!printWindow){setMessage("El navegador bloqueó la ventana del ticket. Permite las ventanas emergentes para imprimir.");return}
+  // Imprime en un iframe oculto para no sacar al usuario de la app.
+  // En Safari móvil, una ventana emergente puede quedar abierta sin ofrecer
+  // una navegación clara de regreso a Ventas.
+  const printFrame=document.createElement("iframe");
+  printFrame.setAttribute("title","Comprobante de venta");
+  printFrame.setAttribute("aria-hidden","true");
+  printFrame.style.position="fixed";
+  printFrame.style.right="0";
+  printFrame.style.bottom="0";
+  printFrame.style.width="0";
+  printFrame.style.height="0";
+  printFrame.style.border="0";
+  document.body.appendChild(printFrame);
+  const printWindow=printFrame.contentWindow;
+  if(!printWindow){printFrame.remove();setMessage("No se pudo preparar la impresión. Intenta nuevamente.");return}
+  printWindow.addEventListener("afterprint",()=>printFrame.remove(),{once:true});
   const rows=data.items.map(item=>`<tr><td><b>${escapeHtml(item.name)}</b>${item.sku?`<small>SKU: ${escapeHtml(item.sku)}</small>`:""}${item.serial_number?`<small>IMEI/Serial: ${escapeHtml(item.serial_number)}</small>`:""}<small class="qty">${item.quantity} × ${fmt(item.unit_price)}</small></td><td class="num">${fmt(item.line_total)}</td></tr>`).join("");
   const paymentsHtml=data.payments.map(p=>`<div class="line"><span>${escapeHtml(paymentLabel(p.method))}${p.reference?`<small class="ref">${escapeHtml(p.reference)}</small>`:""}</span><b>${fmt(p.amount)}</b></div>`).join("");
   printWindow.document.open();
@@ -133,7 +147,7 @@ export default function SalesPage(){
   <section class="totals"><div class="line"><span>Subtotal</span><b>${fmt(data.subtotal)}</b></div><div class="line"><span>Descuento</span><b>− ${fmt(data.discount)}</b></div><div class="line grand"><span>TOTAL</span><strong>${fmt(data.total)}</strong></div><p class="payments-title">Medios de pago</p>${paymentsHtml}</section>
   ${data.notes?`<section class="notes"><b>Observaciones</b><p>${escapeHtml(data.notes)}</p></section>`:""}
   <footer><p class="thanks">¡Gracias por tu compra!</p><p class="small">Conserva este comprobante</p><p class="small">DARKPHONE</p></footer>
-  <script>window.addEventListener("load",()=>setTimeout(()=>window.print(),350));window.addEventListener("afterprint",()=>window.close());</script></body></html>`);
+  <script>window.addEventListener("load",()=>setTimeout(()=>window.print(),350));</script></body></html>`);
   printWindow.document.close();
 }
 async function viewSale(sale:Sale){
