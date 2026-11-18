@@ -89,6 +89,16 @@ export default function SalesPage(){
   if(!printWindow){setMessage("Safari bloqueó la ventana del comprobante. Permite las ventanas emergentes para este sitio e inténtalo de nuevo.");return}
   const rows=data.items.map(item=>`<tr><td><b>${escapeHtml(item.name)}</b>${item.sku?`<small>SKU: ${escapeHtml(item.sku)}</small>`:""}${item.serial_number?`<small>IMEI/Serial: ${escapeHtml(item.serial_number)}</small>`:""}<small class="qty">${item.quantity} × ${fmt(item.unit_price)}</small></td><td class="num">${fmt(item.line_total)}</td></tr>`).join("");
   const paymentsHtml=data.payments.map(p=>`<div class="line"><span>${escapeHtml(paymentLabel(p.method))}${p.reference?`<small class="ref">${escapeHtml(p.reference)}</small>`:""}</span><b>${fmt(p.amount)}</b></div>`).join("");
+  const pdfData=JSON.stringify({
+    sale_number:data.sale_number,
+    created_at:new Date(data.created_at).toLocaleString("es-CO",{dateStyle:"short",timeStyle:"short"}),
+    customer_name:data.customer_name||"Mostrador",
+    customer_phone:data.customer_phone||"",
+    items:data.items.map(i=>({name:i.name,sku:i.sku||"",serial_number:i.serial_number||"",quantity:i.quantity,unit_price:i.unit_price,line_total:i.line_total})),
+    subtotal:data.subtotal,discount:data.discount,total:data.total,
+    payments:data.payments.map(p=>({method:paymentLabel(p.method),amount:p.amount,reference:p.reference||""})),
+    notes:data.notes||""
+  }).replace(/</g,"\\u003c");
   printWindow.document.open();
   printWindow.document.write(`<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Comprobante Darkphone #${data.sale_number}</title><style>
   *{box-sizing:border-box}
@@ -129,7 +139,7 @@ export default function SalesPage(){
   @page{size:80mm auto;margin:0}
   @media print{body{max-width:none;width:72mm;padding:4mm}.actions{display:none!important}}
   </style></head><body>
-  <nav class="actions"><button onclick="window.print()">Imprimir ticket</button><button class="secondary" onclick="window.close();if(!window.closed)history.back()">Volver a Darkphone</button></nav>
+  <nav class="actions"><button onclick="downloadOrSharePdf()">Guardar / compartir PDF</button><button class="secondary" onclick="window.print()">Imprimir</button><button class="secondary" onclick="window.close();if(!window.closed)history.back()">Volver</button></nav>
   <header class="brand"><img class="logo" src="${window.location.origin}/darkphone-mark.svg" alt="Logo Darkphone" onerror="this.style.display='none'"><h1>DARKPHONE</h1><p class="subtitle">COMPROBANTE DE VENTA</p></header>
   <hr class="rule">
   <section class="meta"><div><span>Fecha</span><span>${escapeHtml(new Date(data.created_at).toLocaleString("es-CO",{dateStyle:"short",timeStyle:"short"}))}</span></div><div><span>Cliente</span><span>${escapeHtml(data.customer_name||"Mostrador")}</span></div>${data.customer_phone?`<div><span>Teléfono</span><span>${escapeHtml(data.customer_phone)}</span></div>`:""}</section>
@@ -137,7 +147,54 @@ export default function SalesPage(){
   <section class="totals"><div class="line"><span>Subtotal</span><b>${fmt(data.subtotal)}</b></div><div class="line"><span>Descuento</span><b>− ${fmt(data.discount)}</b></div><div class="line grand"><span>TOTAL</span><strong>${fmt(data.total)}</strong></div><p class="payments-title">Medios de pago</p>${paymentsHtml}</section>
   ${data.notes?`<section class="notes"><b>Observaciones</b><p>${escapeHtml(data.notes)}</p></section>`:""}
   <footer><p class="thanks">¡Gracias por tu compra!</p><p class="small">Conserva este comprobante</p><p class="small">DARKPHONE</p></footer>
-  </body></html>`);
+  <script>
+  const receipt=${pdfData};
+  const money=n=>new Intl.NumberFormat("es-CO",{style:"currency",currency:"COP",maximumFractionDigits:0}).format(Number(n)||0);
+  function ascii(s){return String(s??"").normalize("NFD").replace(/[\\u0300-\\u036f]/g,"").replace(/[^\\x20-\\x7E]/g," ")}
+  function pdfEscape(s){return ascii(s).replace(/\\\\/g,"\\\\\\\\").replace(/\\(/g,"\\\\(").replace(/\\)/g,"\\\\)")}
+  function makePdf(){
+    const pages=[[]];let y=752;
+    const add=(txt,size=10,bold=false)=>{if(y<55){pages.push([]);y=752}pages[pages.length-1].push({txt:ascii(txt),size,bold,y});y-=size+7};
+    const line=()=>{y-=4};
+    add("DARKPHONE",20,true);add("COMPROBANTE DE VENTA #"+receipt.sale_number,11,true);
+    add("Fecha: "+receipt.created_at);add("Cliente: "+receipt.customer_name);
+    if(receipt.customer_phone)add("Telefono: "+receipt.customer_phone);
+    line();add("PRODUCTOS",10,true);
+    receipt.items.forEach(item=>{add(item.name,10,true);if(item.sku)add("SKU: "+item.sku,8);if(item.serial_number)add("IMEI/Serial: "+item.serial_number,8);add(item.quantity+" x "+money(item.unit_price)+"     "+money(item.line_total),9);line()});
+    line();add("Subtotal: "+money(receipt.subtotal),10);add("Descuento: -"+money(receipt.discount),10);add("TOTAL: "+money(receipt.total),15,true);line();add("MEDIOS DE PAGO",10,true);
+    receipt.payments.forEach(p=>add(p.method+": "+money(p.amount)+(p.reference?" · "+p.reference:""),9));
+    if(receipt.notes){line();add("OBSERVACIONES",9,true);add(receipt.notes,9)}
+    add("Gracias por tu compra - DARKPHONE",10,true);
+    const objs=[];const addObj=s=>(objs.push(s),objs.length);
+    const catalog=addObj("<< /Type /Catalog /Pages 2 0 R >>");
+    const pagesObj=addObj("");
+    const font=addObj("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>");
+    const fontBold=addObj("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>");
+    const pageRefs=[];
+    pages.forEach(items=>{
+      let stream="BT\n";
+      items.forEach(it=>{stream+=(it.bold?"/F2 ":"/F1 ")+it.size+" Tf 42 "+it.y+" Td ("+pdfEscape(it.txt)+") Tj\n0 -"+(it.size+7)+" Td\n"});
+      stream+="ET";
+      const streamId=addObj("<< /Length "+stream.length+" >>\nstream\n"+stream+"\nendstream");
+      const pageId=addObj("<< /Type /Page /Parent "+pagesObj+" 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 "+font+" 0 R /F2 "+fontBold+" 0 R >> >> /Contents "+streamId+" 0 R >>");
+      pageRefs.push(pageId);
+    });
+    objs[pagesObj-1]="<< /Type /Pages /Kids ["+pageRefs.map(id=>id+" 0 R").join(" ")+"] /Count "+pageRefs.length+" >>";
+    let pdf="%PDF-1.4\n";const offsets=[0];
+    objs.forEach((obj,i)=>{offsets.push(pdf.length);pdf+=(i+1)+" 0 obj\n"+obj+"\nendobj\n"});
+    const xref=pdf.length;pdf+="xref\n0 "+(objs.length+1)+"\n0000000000 65535 f \n";
+    offsets.slice(1).forEach(o=>pdf+=String(o).padStart(10,"0")+" 00000 n \n");
+    pdf+="trailer\n<< /Size "+(objs.length+1)+" /Root "+catalog+" 0 R >>\nstartxref\n"+xref+"\n%%EOF";
+    return new Blob([pdf],{type:"application/pdf"});
+  }
+  async function downloadOrSharePdf(){
+    const blob=makePdf(),name="Darkphone-venta-"+receipt.sale_number+".pdf",file=new File([blob],name,{type:"application/pdf"});
+    try{
+      if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:"Comprobante Darkphone #"+receipt.sale_number});return}
+    }catch(error){if(error&&error.name==="AbortError")return}
+    const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
+  }
+  </script></body></html>`);
   printWindow.document.close();
 }
 async function viewSale(sale:Sale){
