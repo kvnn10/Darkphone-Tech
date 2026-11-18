@@ -189,7 +189,7 @@ export default function SalesPage(){
       refs.push(obj("<< /Type /Page /Parent "+pagesObj+" 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 "+regular+" 0 R /F2 "+bold+" 0 R >> >> /Contents "+content+" 0 R >>"));
     });
     objs[pagesObj-1]="<< /Type /Pages /Kids ["+refs.map(n=>n+" 0 R").join(" ")+"] /Count "+refs.length+" >>";
-    let pdf="%PDF-1.4\n",offsets=[0];
+    let pdf="%PDF-1.4\n";const offsets=[0];
     objs.forEach((o,i)=>{offsets.push(pdf.length);pdf+=(i+1)+" 0 obj\n"+o+"\nendobj\n"});
     const xref=pdf.length;pdf+="xref\n0 "+(objs.length+1)+"\n0000000000 65535 f \n";
     offsets.slice(1).forEach(n=>pdf+=String(n).padStart(10,"0")+" 00000 n \n");
