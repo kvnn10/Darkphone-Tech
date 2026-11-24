@@ -16,7 +16,7 @@ export default function CashPage(){
  const [loading,setLoading]=useState(true),[saving,setSaving]=useState(false),[error,setError]=useState(""),[message,setMessage]=useState("");
  const [openingAmount,setOpeningAmount]=useState("0"),[openingTransferAmount,setOpeningTransferAmount]=useState("0"),[openingNotes,setOpeningNotes]=useState("");
  const [showMovement,setShowMovement]=useState(false),[form,setForm]=useState({kind:"income" as "income"|"expense"|"withdrawal",payment_channel:"cash" as "cash"|"bank_transfer",amount:"",category:"Otros",description:"",reference:"",date:today()});
- const [counted,setCounted]=useState(""),[countedTransfer,setCountedTransfer]=useState(""),[closeNotes,setCloseNotes]=useState("");
+ const [counted,setCounted]=useState("0"),[countedTransfer,setCountedTransfer]=useState(""),[closeNotes,setCloseNotes]=useState("");
  const [historySearch,setHistorySearch]=useState(""),[historyRange,setHistoryRange]=useState("all"),[historyFrom,setHistoryFrom]=useState(""),[historyTo,setHistoryTo]=useState("");
  const [expandedDays,setExpandedDays]=useState<string[]>([today()]);
  const load=useCallback(async()=>{
