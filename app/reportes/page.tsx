@@ -17,7 +17,7 @@ export default function Page(){
    supabase.from("products").select("id,name,cost_price,selling_price,stock_quantity,min_stock"),
    supabase.from("financial_movements").select("movement_date,direction,amount,source").gte("movement_date",from).lte("movement_date",to).limit(10000),
    supabase.from("service_orders").select("id,estimated_cost,final_cost,parts_cost,received_at,status").gte("received_at",from+"T00:00:00-05:00").lte("received_at",to+"T23:59:59-05:00"),
-   supabase.from("purchases").select("total,purchase_date,status").gte("purchase_date",from).lte("purchase_date",to).neq("status","cancelled"),
+   supabase.from("purchases").select("id,total,purchase_date,status").gte("purchase_date",from).lte("purchase_date",to).neq("status","cancelled"),
    supabase.from("payroll_entries").select("net_amount,paid_at,status").eq("status","paid").gte("paid_at",from+"T00:00:00-05:00").lte("paid_at",to+"T23:59:59-05:00"),
    supabase.from("payroll_employees").select("id,full_name").order("full_name"),
    supabase.from("purchase_items").select("purchase_id,quantity,received_quantity,unit_cost")
